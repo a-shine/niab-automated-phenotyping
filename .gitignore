@@ -1,0 +1,15 @@
+datasets/
+models/
+
+# VS Code
+.vscode/
+
+# JetBrains
+.idea/
+
+# Python virtual environment
+venv/
+
+# Python
+*.egg-info/
+*.pyc
