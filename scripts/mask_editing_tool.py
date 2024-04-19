@@ -1,9 +1,14 @@
 import cv2
 import numpy as np
+import os
 
-# Load the image and the mask
-# image = cv2.imread('./output/img/Exp01_Block01_Image01_Pot001.jpg')
-mask = cv2.imread('./output/mask/Exp01_Block01_Image01_Pot001.jpg', cv2.IMREAD_GRAYSCALE)
+# Get a list of all the mask files
+mask_dir = './output/mask'
+img_dir = './output/img'
+mask_files = [os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith('.jpg')]
+mask_files.sort()
+print(f'Found {len(mask_files)} mask files')
+current_index = 136
 
 # Downscale the images
 # scale_percent = 20  # percent of original size
@@ -13,20 +18,15 @@ mask = cv2.imread('./output/mask/Exp01_Block01_Image01_Pot001.jpg', cv2.IMREAD_G
 # # image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
 # mask = cv2.resize(mask, dim, interpolation = cv2.INTER_AREA)
 
-
 # Create a window
 cv2.namedWindow('image')
 
 # Create a trackbar for brush size
-cv2.createTrackbar('Size', 'image', 5, 50, lambda x: None)
-
-# Create a canvas to draw on
-canvas = mask.copy()
-canvas_display = canvas.copy()
+cv2.createTrackbar('Size', 'image', 20, 200, lambda x: None)
 
 # Mouse callback function
 def draw(event, x, y, flags, param):
-    global canvas_display
+    global canvas, canvas_display
     canvas_display = canvas.copy()
     if event == cv2.EVENT_MOUSEMOVE:
         # Get the brush size from the trackbar
@@ -42,14 +42,32 @@ def draw(event, x, y, flags, param):
 # Set the mouse callback function
 cv2.setMouseCallback('image', draw)
 
-while True:
-    # Display the image and the mask side by side
-    # display = np.hstack((image, cv2.cvtColor(canvas, cv2.COLOR_GRAY2BGR)))
-    display = cv2.cvtColor(canvas_display, cv2.COLOR_GRAY2BGR)
-    cv2.imshow('image', display)
+# remove the mask files that are already edited i.e. before the current_index
+mask_files = mask_files[current_index:]
 
-    # If 'q' is pressed, break the loop
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+for mask_file in mask_files:
+    print(f'Editing mask: {mask_file}')
+    # Load the mask
+    mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
+    canvas = mask.copy()
+    canvas_display = canvas.copy()
+
+    # Display the img and mask with the mask overlayed with low opacity
+    img_file = os.path.join(img_dir, os.path.basename(mask_file))
+    img = cv2.imread(img_file)
+    
+    while True:
+        combined = cv2.addWeighted(img, 0.5, cv2.cvtColor(canvas_display, cv2.COLOR_GRAY2BGR), 0.5, 0)
+        cv2.imshow('image', combined)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('n'):
+            cv2.imwrite(mask_file, canvas)
+            print(f'Saved mask and moving to next mask')
+            print(f'Current index: {current_index} out of {len(mask_files)}')
+            break
+        elif key == ord('s'):
+            # Save the mask
+            cv2.imwrite(mask_file, canvas)
+            print(f'Saved mask')
 
 cv2.destroyAllWindows()
