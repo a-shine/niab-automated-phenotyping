@@ -4,3 +4,6 @@ torch==2.2.2
 scikit-image==0.22.0
 numpy==1.26.4
 matplotlib==3.8.4
+albumentations==1.4.4
+torchvision==0.17.2
+segmentation-models-pytorch==0.3.3
