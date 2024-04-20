@@ -8,7 +8,8 @@ img_dir = './output/img'
 mask_files = [os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith('.jpg')]
 mask_files.sort()
 print(f'Found {len(mask_files)} mask files')
-current_index = 136
+total_files = len(mask_files)
+current_index = 0
 
 # Downscale the images
 # scale_percent = 20  # percent of original size
@@ -63,7 +64,8 @@ for mask_file in mask_files:
         if key == ord('n'):
             cv2.imwrite(mask_file, canvas)
             print(f'Saved mask and moving to next mask')
-            print(f'Current index: {current_index} out of {len(mask_files)}')
+            print(f'Current index: {current_index} out of {total_files}')
+            current_index += 1
             break
         elif key == ord('s'):
             # Save the mask
