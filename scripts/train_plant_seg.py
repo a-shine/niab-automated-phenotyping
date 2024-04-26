@@ -1,0 +1,224 @@
+import os
+import random
+
+import matplotlib.pyplot as plt
+from PIL import Image
+from torch.utils.data import Dataset
+from torch.utils.data import random_split
+from torchvision.transforms import ToTensor, Compose, RandomHorizontalFlip, ColorJitter, Normalize, Resize
+
+import numpy as np
+
+import segmentation_models_pytorch as smp
+
+from torch import nn
+import torch
+import torchvision.transforms.functional as TF
+
+
+import torch.backends.mps
+from torch.utils.data import DataLoader
+
+IMG_TRANSFORM = Compose([
+    Resize((256, 256)),  # Resize the image to 256x256
+    # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),  # Random color jitter
+    ToTensor(),  # Convert the image to a PyTorch tensor
+    # Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
+])
+
+MASK_TRANSFORM = Compose([
+    Resize((256, 256)),  # Resize the image to 256x256
+    ToTensor(),
+])
+
+# Transformation that need to be applied to both the image and mask (at the same time)
+COMMON_TRANSFORM = Compose([
+    RandomHorizontalFlip()
+])
+
+class SegmentationDataset(Dataset):
+    def __init__(self, img_dir, mask_dir, img_transform=None, mask_transform=None):
+        """
+        Custom dataset for segmentation tasks.
+
+        Args:
+            img_dir (str): Path to the folder containing images.
+            mask_dir (str): Path to the folder containing masks.
+            img_transform (callable, optional): Optional transform to be applied to the image.
+            mask_transform (callable, optional): Optional transform to be applied to the mask.
+        """
+        self.img_dir = img_dir
+        self.mask_dir = mask_dir
+        self.img_transform = img_transform
+        self.mask_transform = mask_transform
+
+        # List all image and mask files in the directories
+        self.img_files = sorted(os.listdir(img_dir))
+        self.mask_files = sorted(os.listdir(mask_dir))
+
+        # Check if the number of images and masks match
+        assert len(self.img_files) == len(self.mask_files), "Number of images and masks must be the same."
+
+    # def binarize(self, image, threshold: int = 127) -> Image:
+    #     return image.point(lambda p: p > threshold and 255)
+   
+    def __len__(self):
+        return len(self.img_files)
+
+    def __getitem__(self, idx):
+        # Get the file names for the corresponding image and mask
+        img_name = os.path.join(self.img_dir, self.img_files[idx])
+        mask_name = os.path.join(self.mask_dir, self.mask_files[idx])
+
+        # Open image and mask files
+        img = Image.open(img_name)
+        mask = Image.open(mask_name)
+
+        mask = mask.convert("L")
+
+        # mask = self.binarize(mask)
+
+        # Apply transformations, if specified
+        if self.img_transform:
+            img = self.img_transform(img)
+
+        if self.mask_transform:
+            mask = self.mask_transform(mask)
+
+            # binarize the mask tensor
+            mask = (mask > 0.5).float()
+
+            # Normalize the mask to [0, 1] as tensors
+            # mask = mask / 255.0
+        return img, mask
+    
+data_processed = SegmentationDataset("/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/imgs", "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/masks",
+                                           img_transform=IMG_TRANSFORM, mask_transform=MASK_TRANSFORM)
+
+# Split the dataset into training and validation sets
+total_size = len(data_processed)
+train_size = int(0.8 * total_size)
+val_size = total_size - train_size
+training_dataset, validation_dataset = random_split(data_processed, [train_size, val_size])
+
+# How much data?
+print(f"Size of training dataset: {len(training_dataset)}")
+print(f"Size of validation dataset: {len(validation_dataset)}")
+
+# Post-transformation, what does the data look like?
+print(f"Shape of first input entry (post-transformation): {data_processed[0][0].shape}")
+print(f"Shape of first label entry (post-transformation): {data_processed[0][1].shape}")
+
+# Parameters
+# https://ai.stackexchange.com/questions/8560/how-do-i-choose-the-optimal-batch-size
+# https://stats.stackexchange.com/questions/164876/what-is-the-trade-off-between-batch-size-and-number-of-iterations-to-train-a-neu
+# It has been observed that with larger batch there is a significant degradation in the quality of the model, as
+# measured by its ability to generalize i.e. large batch size is better for training but not for generalization
+# (overfitting)
+BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
+EPOCHS = 50
+
+# Detect device for training and running the model
+# Installing CUDA - https://docs.nvidia.com/cuda/cuda-quick-start-guide/
+device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+print(f"Training/fitting using {device} device")
+
+# Create a data loader to handle loading data in and out of memory in batches
+
+# Create data loaders.
+train_dataloader = DataLoader(training_dataset, batch_size=BATCH_SIZE)
+validation_dataloader = DataLoader(validation_dataset, batch_size=BATCH_SIZE)
+
+# Look at the shape of the data coming out of the data loader (batch size, channels, height, width)
+for X, y in validation_dataloader:
+    print(f"Shape of X: {X.shape}")
+    print(f"Shape of y: {y.shape} {y.dtype}")
+    break
+
+# Create an instance of the model and move it to the device (GPU or CPU)
+model = smp.Unet(
+    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+    classes=1,                      # model output channels (number of classes in your dataset)
+).to(device)
+
+def fit(dataloader, model, loss_fn, optimizer, scheduler, device, log_freq=10) -> None:
+    """
+    Fit the model to the data using the loss function and optimizer
+    Taken from the official PyTorch quickstart tutorial (https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html#optimizing-the-model-parameters)
+    :param dataloader:
+    :param model:
+    :param loss_fn:
+    :param optimizer:
+    :param scheduler:
+    :param device:
+    :param log_freq:
+    :return: None
+    """
+    size = len(dataloader.dataset)
+    model.train()
+    for batch, (X, y) in enumerate(dataloader):
+        # move data to device (GPU or CPU), ensure that the data and model are on the same device
+        X, y = X.to(device), y.to(device)
+
+        # Compute prediction error
+        pred = model(X)  # forward pass
+        loss = loss_fn(pred, y)
+
+        # Backpropagation
+        loss.backward()  # backward pass (calculate gradients)
+        optimizer.step()  # update params
+        optimizer.zero_grad()  # reset gradients to zero
+        # scheduler.step()  # update learning rate (decay)
+
+        # To avoid too much output, only print every n batches (log_freq), by default every 10 batches
+        if batch % log_freq == 0:
+            loss, current = loss.item(), (batch + 1) * len(X)
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
+
+def validate(dataloader, model, loss_fn):
+    num_batches = len(dataloader)
+    model.eval()
+    total_loss, total_precision, total_recall, total_f1, total_iou = 0, 0, 0, 0, 0
+    with torch.no_grad():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            total_loss += loss_fn(pred, y).item()
+
+            # Convert predictions to binary class labels
+            pred_binary = (pred > 0.5).float()
+
+            # Calculate metrics
+
+
+    # Calculate averages
+    avg_loss = total_loss / num_batches
+    # avg_precision = total_precision / num_batches
+    # avg_recall = total_recall / num_batches
+    # avg_f1 = total_f1 / num_batches
+    # avg_iou = total_iou / num_batches
+
+    print(f"Validation Metrics: Avg loss: {avg_loss:>8f} \n")
+    return avg_loss
+
+# loss_fn = torch.nn.BCEWithLogitsLoss()
+loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
+optimizer = torch.optim.Adam(params = model.parameters(), lr = 3e-4) # high learning rate and allow it to decay
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)  # decay the learning rate by a factor of 0.1 every epoch
+
+# Setting up directory to save models
+os.makedirs("/home/users/ashine/gws/niab-automated-phenotyping/models", exist_ok=True)
+
+best_loss = float('inf')
+for t in range(EPOCHS):
+    print(f"Epoch {t + 1}\n-------------------------------")
+    fit(train_dataloader, model, loss_fn, optimizer, None, device, log_freq=2)
+    val_loss = validate(validation_dataloader, model, loss_fn)
+    if val_loss < best_loss:
+        best_loss = val_loss
+        torch.save(model.state_dict(), f"/home/users/ashine/gws/niab-automated-phenotyping/models/best_model.pth")
+        print("Saved best model")
+print("Done!")
