@@ -20,6 +20,7 @@
 ## Repo structure
 
 * [.assets/](./.assets/): assets such as images used in the README
+* [archive/](./archive/): old files that may be useful for reference
 * [notebooks/](./notebooks/): main Jupyter notebooks of the project
 * [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
 * [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
@@ -28,13 +29,17 @@
 
 ## Installation and usage
 
-To install the required dependencies and source files, once the repository in on your machine, follow these steps:
+To install the required dependencies and source files, follow these steps:
 
-1. If using [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.anaconda.com/free/miniconda/index.html) environment manager, make sure you have created a new environment.
+1. Clone the repository onto machine
+    ```bash
+    git clone https://github.com/a-shine/niab-automated-phenotyping.git
+    ```
+1. (If using [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.anaconda.com/free/miniconda/index.html) environment manager, create a new environment)
     ```bash
     conda create -n [YOUR_ENV_NAME] python=3.12
     ```
-1. Install the required dependencies.
+1. From a terminal within the root of the repository, install the required dependencies
     ```bash
     pip install -r requirements.txt
     ```
