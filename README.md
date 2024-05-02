@@ -13,7 +13,7 @@
   </tr>
 </table>
 
-Keywords (general to specific): Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Tef, Weed resilience
+**Keywords (general to specific)**: Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Tef, Weed resilience
 
 ## Overview
 
