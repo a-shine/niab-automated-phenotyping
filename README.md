@@ -46,9 +46,7 @@ To install the required dependencies and source files, follow these steps:
 
 Note: The code was developed and tested on Python 3.12.3.
 
-## Quick start
-
-To get started we recommend taking a look at 
+To get started we recommend taking a look at [notebooks/012 Individual identifying algorithm.ipynb](./notebooks/012%20Individual%20identifying%20algorithm.ipynb).
 This notebook provides a full overview of the pipeline, documenting each step.
 
 ## License
