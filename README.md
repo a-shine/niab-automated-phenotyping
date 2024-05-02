@@ -4,11 +4,11 @@
   <tr align="center">
     <!-- UKRI Logo -->
     <td align="center">
-      <img src=".assets/images/readme/logo_ukri_colour.png" alt="UKRI Logo" width="600" />
+      <img src="assets/images/readme/logo_ukri_colour.png" alt="UKRI Logo" width="600" />
     </td>
     <!-- University of Cambridge Logo -->
     <td align="center">
-      <img src=".assets/images/readme/logo_cambridge_colour.jpg" alt="University of Cambridge logo" width="600" />
+      <img src="assets/images/readme/logo_cambridge_colour.jpg" alt="University of Cambridge logo" width="600" />
     </td>
   </tr>
 </table>
@@ -19,7 +19,7 @@ Keywords (general to specific): Artificial Intelligence (AI), Deep Learning (DL)
 
 ## Repo structure
 
-* [.assets/](./assets/): assets such as images used in the README
+* [assets/](./assets/): assets such as images used in the README
 * [notebooks/](./notebooks/): main Jupyter notebooks of the project
 * [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
 * [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
