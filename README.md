@@ -28,12 +28,23 @@
 
 ## Installation and usage
 
-To get setup and tryout the code, follow these steps:
+To install the required dependencies and source files, once the repository in on your machine, follow these steps:
 
-Note: The code was developed and tested on Python 3.12.
+1. If using [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.anaconda.com/free/miniconda/index.html) environment manager, make sure you have created a new environment.
+    ```bash
+    conda create -n [YOUR_ENV_NAME] python=3.12
+    ```
+1. Install the required dependencies.
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+Note: The code was developed and tested on Python 3.12.3.
+
+## Quick start
 
 To get started we recommend taking a look at 
-This notebook provides a full overview of the pipeline and documentation.
+This notebook provides a full overview of the pipeline, documenting each step.
 
 ## License
 
