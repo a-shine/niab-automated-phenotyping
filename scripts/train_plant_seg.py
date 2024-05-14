@@ -1,99 +1,22 @@
 import os
-import random
-
-import matplotlib.pyplot as plt
-from PIL import Image
-from torch.utils.data import Dataset
+from typing import List
 from torch.utils.data import random_split
-from torchvision.transforms import ToTensor, Compose, RandomHorizontalFlip, ColorJitter, Normalize, Resize
-
-import numpy as np
-
+from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS, MASK_TRANSFORMS
 import segmentation_models_pytorch as smp
-
-from torch import nn
 import torch
-import torchvision.transforms.functional as TF
-
-
 import torch.backends.mps
 from torch.utils.data import DataLoader
+from utils.dl.model import MCDUNet
 
-IMG_TRANSFORM = Compose([
-    Resize((256, 256)),  # Resize the image to 256x256
-    # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),  # Random color jitter
-    ToTensor(),  # Convert the image to a PyTorch tensor
-    # Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
-])
+# set torch seed
+torch.cuda.manual_seed_all(42)
 
-MASK_TRANSFORM = Compose([
-    Resize((256, 256)),  # Resize the image to 256x256
-    ToTensor(),
-])
-
-# Transformation that need to be applied to both the image and mask (at the same time)
-COMMON_TRANSFORM = Compose([
-    RandomHorizontalFlip()
-])
-
-class SegmentationDataset(Dataset):
-    def __init__(self, img_dir, mask_dir, img_transform=None, mask_transform=None):
-        """
-        Custom dataset for segmentation tasks.
-
-        Args:
-            img_dir (str): Path to the folder containing images.
-            mask_dir (str): Path to the folder containing masks.
-            img_transform (callable, optional): Optional transform to be applied to the image.
-            mask_transform (callable, optional): Optional transform to be applied to the mask.
-        """
-        self.img_dir = img_dir
-        self.mask_dir = mask_dir
-        self.img_transform = img_transform
-        self.mask_transform = mask_transform
-
-        # List all image and mask files in the directories
-        self.img_files = sorted(os.listdir(img_dir))
-        self.mask_files = sorted(os.listdir(mask_dir))
-
-        # Check if the number of images and masks match
-        assert len(self.img_files) == len(self.mask_files), "Number of images and masks must be the same."
-
-    # def binarize(self, image, threshold: int = 127) -> Image:
-    #     return image.point(lambda p: p > threshold and 255)
-   
-    def __len__(self):
-        return len(self.img_files)
-
-    def __getitem__(self, idx):
-        # Get the file names for the corresponding image and mask
-        img_name = os.path.join(self.img_dir, self.img_files[idx])
-        mask_name = os.path.join(self.mask_dir, self.mask_files[idx])
-
-        # Open image and mask files
-        img = Image.open(img_name)
-        mask = Image.open(mask_name)
-
-        mask = mask.convert("L")
-
-        # mask = self.binarize(mask)
-
-        # Apply transformations, if specified
-        if self.img_transform:
-            img = self.img_transform(img)
-
-        if self.mask_transform:
-            mask = self.mask_transform(mask)
-
-            # binarize the mask tensor
-            mask = (mask > 0.5).float()
-
-            # Normalize the mask to [0, 1] as tensors
-            # mask = mask / 255.0
-        return img, mask
-    
-data_processed = SegmentationDataset("/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/imgs", "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/masks",
-                                           img_transform=IMG_TRANSFORM, mask_transform=MASK_TRANSFORM)
+data_processed = SegmentationDataset(
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/imgs", 
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/masks",
+    img_transform=IMG_TRANSFORMS,
+    mask_transform=MASK_TRANSFORMS
+    )
 
 # Split the dataset into training and validation sets
 total_size = len(data_processed)
@@ -135,13 +58,17 @@ for X, y in validation_dataloader:
     print(f"Shape of y: {y.shape} {y.dtype}")
     break
 
+unet_dims: List = []
+for i in range(5):
+    unet_dims.append(2**(5 + i))
+
 # Create an instance of the model and move it to the device (GPU or CPU)
-model = smp.Unet(
-    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-    classes=1,                      # model output channels (number of classes in your dataset)
-).to(device)
+model = MCDUNet(n_channels=3,
+             n_classes=1,
+             bilinear=True,
+             ddims=unet_dims,
+             UQ=True,
+             ).to(device)
 
 def fit(dataloader, model, loss_fn, optimizer, scheduler, device, log_freq=10) -> None:
     """
