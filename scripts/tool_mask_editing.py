@@ -1,3 +1,9 @@
+# GUI tool to help labeler correct image masks. This is meant to be used as 
+# part of a semi-automatic labeling pipeline where the bulk of the segment 
+# labeling is carried out using a naive approach such as HSV thresholding and 
+# then the operator corrects the masks using this tool before feeding the 
+# corrected masks to the neural network for training.
+
 import cv2
 import numpy as np
 import os

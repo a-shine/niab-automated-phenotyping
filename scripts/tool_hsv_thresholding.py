@@ -1,3 +1,7 @@
+# GUI tool to help operator to find the HSV threshold values for HSV 
+# segmentation suited to a specified image.
+
+
 import cv2
 import numpy as np
 
