@@ -120,4 +120,4 @@ class ActiveLearningDataset(Dataset):
         if self.img_transform:
             img = self.img_transform(img)
 
-        return img
+        return img_name, img
