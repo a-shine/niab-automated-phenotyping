@@ -43,6 +43,10 @@ To install the required dependencies and source files, follow these steps:
     ```bash
     pip install -r requirements.txt
     ```
+1. Setup the utils library to use throughout the repository
+    ```bash
+    pip install -e .
+    ```
 
 Note: The code was developed and tested on Python 3.12.3.
 
