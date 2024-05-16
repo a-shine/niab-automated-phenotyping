@@ -1,15 +1,11 @@
 # Batch script to run HSV segmentation based on specified HSV thresholds on the 
 # images in the dataset.
 
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import os
 import cv2
 import numpy as np
 import glob
-import utils.white_balance as wb
+from utils.image_utils import white_balance as wb
 
 HSVMIN_RAW = (30, 170, 0)
 HSVMAX_RAW = (65, 255, 255)
@@ -27,7 +23,7 @@ def segment_plants(img):
     # mask_raw = cv2.inRange(hsv_img, lower_raw, upper_raw)
 
     # Create HSV Image from white balanced image and threshold into a range.
-    wb_img = wb.white_balance(img)
+    wb_img = wb(img)
     hsv_img = cv2.cvtColor(wb_img, cv2.COLOR_BGR2HSV)
     mask_wb = cv2.inRange(hsv_img, lower_wb, upper_wb)
 
@@ -43,7 +39,9 @@ def segment_plants(img):
 
 if __name__ == '__main__':
     # Get all the images in the folder and subfolders of ./datasets/niab
-    images = glob.glob('./datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename/EXP01_Block01/**/*.jpg', recursive=True)
+    images = glob.glob('./datasets/niab/EXP01/Top_Images/Masked_Dataset_Active/img_uncertain/*.jpg', recursive=True)
+
+
 
     # Create the output folder
     if not os.path.exists('./output'):
