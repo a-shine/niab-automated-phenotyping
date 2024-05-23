@@ -5,7 +5,6 @@
 # corrected masks to the neural network for training.
 
 import cv2
-import numpy as np
 import os
 
 # Get a list of all the mask files
