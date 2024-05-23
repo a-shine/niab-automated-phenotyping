@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{fancyhdr} % fancy document header
+\usepackage{graphicx} % Inserting images
+\usepackage[toc,page]{appendix}
+\usepackage{subcaption}
+\usepackage{float} % 'H' (force here) placement specifier 
+\usepackage{hyperref} % Click-able citations
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[parfill]{parskip}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{subscript}
+
+\renewcommand\familydefault{\sfdefault}
+
+% Define a command to get the word count between two sections
+\newcommand{\detailtexcount}[1]{%
+  \immediate\write18{texcount -merge -sum -q #1.tex output.bbl > #1.wcdetail }%
+  \verbatiminput{#1.wcdetail}%
+}
+
+\fancyhead[L]{Guided Team Challenge Report}
+\fancyhead[R]{\today}
+
+\begin{document}
+\pagestyle{fancy}
+
+%TC:ignore
+\input{titlepage}
+
+\input{abstract}
+%TC:endignore
+\newpage
+
+\tableofcontents
+\newpage
+
+\input{content/01_introduction}
+
+\clearpage
+\input{content/02_data_n_methods}
+
+\clearpage
+\input{content/03_results_n_discussion}
+
+\clearpage
+\input{content/04_conclusion}
+
+%TC:ignore
+\clearpage
+\bibliographystyle{vancouver}
+\bibliography{bibliography}
+
+\clearpage
+\appendix
+
+\input{appendix/glossary}
+\clearpage
+
+% \detailtexcount{main}
+
+%TC:endignore
+
+\end{document}
