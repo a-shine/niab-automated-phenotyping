@@ -27,11 +27,11 @@ torch.cuda.manual_seed_all(42)  # set torch seed
 # measured by its ability to generalize i.e. large batch size is better for training but not for generalization
 # (overfitting)
 BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
-EPOCHS = 50
+EPOCHS = 200
 
 data_processed = SegmentationDataset(
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/imgs", 
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset/masks",
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset_Corrected/imgs", 
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset_Corrected/masks",
     img_transform=IMG_TRANSFORMS,
     mask_transform=MASK_TRANSFORMS
     )
