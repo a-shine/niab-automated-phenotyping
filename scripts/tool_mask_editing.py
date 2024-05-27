@@ -5,7 +5,6 @@
 # corrected masks to the neural network for training.
 
 import cv2
-import numpy as np
 import os
 
 # Get a list of all the mask files
@@ -17,14 +16,6 @@ print(f'Found {len(mask_files)} mask files')
 total_files = len(mask_files)
 current_index = 0
 
-# Downscale the images
-# scale_percent = 20  # percent of original size
-# width = int(mask.shape[1] * scale_percent / 100)
-# height = int(mask.shape[0] * scale_percent / 100)
-# dim = (width, height)
-# # image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-# mask = cv2.resize(mask, dim, interpolation = cv2.INTER_AREA)
-
 # Create a window
 cv2.namedWindow('image')
 
@@ -32,7 +23,7 @@ cv2.namedWindow('image')
 cv2.createTrackbar('Size', 'image', 20, 200, lambda x: None)
 
 # Mouse callback function
-def draw(event, x, y, flags, param):
+def draw_or_erase(event, x, y, flags, param):
     global canvas, canvas_display
     canvas_display = canvas.copy()
     if event == cv2.EVENT_MOUSEMOVE:
@@ -41,13 +32,15 @@ def draw(event, x, y, flags, param):
         # Draw a circle on the display canvas
         cv2.circle(canvas_display, (x, y), size, (255), 1)
         # FIXME: You really have to click and then drag while clicking for it to work
+        if flags == cv2.EVENT_FLAG_RBUTTON:
+            print(f'Eraser clicked at x: {x}, y: {y}')
+            cv2.circle(canvas, (x, y), size, (0), -1)
         if flags == cv2.EVENT_FLAG_LBUTTON:
             print(f'Brush clicked at x: {x}, y: {y}')
-            # Draw a black circle on the canvas
-            cv2.circle(canvas, (x, y), size, (0), -1)
+            cv2.circle(canvas, (x, y), size, (255), -1)
 
 # Set the mouse callback function
-cv2.setMouseCallback('image', draw)
+cv2.setMouseCallback('image', draw_or_erase)
 
 # remove the mask files that are already edited i.e. before the current_index
 mask_files = mask_files[current_index:]
