@@ -60,3 +60,17 @@ def get_branching_points(skeleton):
     branching_points = np.argwhere(convolved >= 13)
 
     return branching_points
+
+def get_crossing_points(skeleton):
+    # Define the convolutional kernel
+    kernel = np.array([[1, 1, 1],
+                       [1, 10, 1],
+                       [1, 1, 1]])
+
+    # Apply the kernel to the skeleton
+    convolved = convolve(skeleton, kernel, mode='constant', cval=0)
+
+    # The crossing points are where the convolved image is 40 or more
+    crossing_points = np.argwhere(convolved >= 14)
+
+    return crossing_points
