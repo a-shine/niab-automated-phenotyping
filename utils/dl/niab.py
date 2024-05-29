@@ -5,6 +5,7 @@ from PIL import Image
 from utils.image_utils import white_balance
 import glob
 import cv2
+import torch
 
 # Loading data
 
@@ -121,3 +122,58 @@ class ActiveLearningDataset(Dataset):
             img = self.img_transform(img)
 
         return img_name, img
+    
+
+class InstanceDataset(Dataset):
+    def __init__(self, binary_mask_dir, instance_mask_dir, img_transform=None, mask_transform=None):
+        """
+        Custom dataset for segmentation tasks.
+
+        Args:
+            img_dir (str): Path to the folder containing images.
+            mask_dir (str): Path to the folder containing masks.
+            img_transform (callable, optional): Optional transform to be applied to the image.
+            mask_transform (callable, optional): Optional transform to be applied to the mask.
+        """
+        self.binary_mask_dir = binary_mask_dir
+        self.instance_mask_dir = instance_mask_dir
+        self.binary_mask_transform = img_transform
+        self.instance_mask_transform = mask_transform
+
+        # List all image and mask files in the directories
+        self.binary_mask_files = sorted(os.listdir(binary_mask_dir))
+        self.instance_mask_files = sorted(os.listdir(instance_mask_dir))
+
+        # Check if the number of images and masks match
+        assert len(self.binary_mask_files) == len(self.instance_mask_files), "Number of images and masks must be the same."
+
+    def __len__(self):
+        return len(self.binary_mask_files)
+
+    def __getitem__(self, idx):
+        # Get the file names for the corresponding image and mask
+        binary_mask_name = os.path.join(self.binary_mask_dir, self.binary_mask_files[idx])
+        instance_mask_name = os.path.join(self.instance_mask_dir, self.instance_mask_files[idx])
+
+        # Open image and mask files
+        binary_mask = Image.open(binary_mask_name)
+        instance_mask = Image.open(instance_mask_name)
+
+        binary_mask = binary_mask.convert("L")
+
+        # Apply transformations, if specified
+        if self.binary_mask_transform:
+            binary_mask = self.binary_mask_transform(binary_mask)
+
+            # binarize the mask tensor
+            binary_mask = (binary_mask > 0.5).float()
+
+        if self.instance_mask_transform:
+            instance_mask = self.instance_mask_transform(instance_mask)
+
+            # map instance mask to integer value
+            unique_values, indices = torch.unique(instance_mask, return_inverse=True)
+
+            instance_mask = indices
+    
+        return binary_mask, instance_mask
