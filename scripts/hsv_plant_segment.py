@@ -39,9 +39,7 @@ def segment_plants(img):
 
 if __name__ == '__main__':
     # Get all the images in the folder and subfolders of ./datasets/niab
-    images = glob.glob('./datasets/niab/EXP01/Top_Images/Masked_Dataset_Active/img_uncertain/*.jpg', recursive=True)
-
-
+    images = glob.glob('./datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename/EXP01_Block01/EXP01_Block01_Rename07_20201206/*.jpg', recursive=True)
 
     # Create the output folder
     if not os.path.exists('./output'):
