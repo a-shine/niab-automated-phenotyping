@@ -7,7 +7,7 @@
 import os
 from typing import List
 from torch.utils.data import random_split
-from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS, MASK_TRANSFORMS
+from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS, MASK_TRANSFORMS, COMMON_TRANSFORMS
 import segmentation_models_pytorch as smp
 import torch
 import torch.backends.mps
@@ -30,10 +30,11 @@ BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
 EPOCHS = 200
 
 data_processed = SegmentationDataset(
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset_Corrected/imgs", 
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Masked_Dataset_Corrected/masks",
-    img_transform=IMG_TRANSFORMS,
-    mask_transform=MASK_TRANSFORMS
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/imgs", 
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/masks",
+    img_transforms=IMG_TRANSFORMS,
+    mask_transforms=MASK_TRANSFORMS,
+    common_transforms=COMMON_TRANSFORMS
     )
 
 # Split the dataset into training and validation sets
@@ -55,6 +56,9 @@ print(f"Size of test dataset: {len(test_dataset)}")
 # Post-transformation, what does the data look like?
 print(f"Shape of first input entry (post-transformation): {data_processed[0][0].shape}")
 print(f"Shape of first label entry (post-transformation): {data_processed[0][1].shape}")
+
+# Unique values in the mask
+print(f"Unique values in the mask: {torch.unique(data_processed[0][1])}")
 
 # Detect device for training and running the model
 # Installing CUDA - https://docs.nvidia.com/cuda/cuda-quick-start-guide/
