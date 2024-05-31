@@ -55,7 +55,7 @@ if __name__ == '__main__':
         wb_img, mask = segment_plants(img)
 
         # Save the images and masks
-        cv2.imwrite('./output/img/' + os.path.basename(images[i]), wb_img)
-        cv2.imwrite('./output/mask/' + os.path.basename(images[i]), mask)
+        cv2.imwrite('./output/imgs/' + os.path.basename(images[i]), wb_img)
+        cv2.imwrite('./output/masks/' + os.path.basename(images[i]), mask)
 
         print('Processed: ' + str(i) + ' of ' + str(len(images)) + ' images')
