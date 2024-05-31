@@ -27,6 +27,29 @@
 
 ## Data
 
+The data used for this project is courtesy of the National Institute of of Agricultural Botany (NIAB).
+The raw dataset contains X top down RGB images taken over the course of X weeks from a phenotyping platform.
+The crop in question is tef.
+
+The raw dataset is available at:...
+
+As part of this project, 300 images were annotated for use in supervised learning of Deep Learning Semantic segmentation models.
+The descriptions of the available annotated datasets is found in the table bellow.
+
+| Dataset name | Description |
+|--------------|-------------|
+| Raw output from HSV segmentation pipeline | Collection of white balanced images and masks generated directly from the HSV segmentation pipeline. No manual corrections have been made. |
+| Partially corrected | Collection of white balanced images and masks generated from the HSV segmentation pipeline with manual noise removal (removing pixels misclassified as shoots). |
+| Fully corrected | Collection of white balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and modified annotation to correctly classify pixels as shoot that were previously classified as background. |
+
+We also looked at exploring an active learning approach, where images that generated predictions with high-levels of uncertainty were annotated to improve model performance.
+The description of the available annotated datasets can be found in the following table.
+
+| Dataset name | Description |
+|--------------|-------------|
+| Fully corrected w. active learning | This is the Fully corrected dataset mentioned above (280 images) with the addition of the 20 images in in the remainder of the dataset that introduced the most MC uncertainty. |
+| Fully corrected w. random  | This is the Fully corrected dataset mentioned above (280 images) with the addition of 20 images picked at random throughout the remaining dataset. |
+
 ## Installation and usage
 
 To install the required dependencies and source files, follow these steps:
