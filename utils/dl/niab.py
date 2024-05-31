@@ -1,4 +1,4 @@
-from torchvision.transforms import ToTensor, Compose, RandomHorizontalFlip, ColorJitter, Normalize, Resize
+from torchvision.transforms.v2 import ToTensor, Compose, RandomHorizontalFlip, ColorJitter, Normalize, Resize
 from torch.utils.data import Dataset
 import os
 from PIL import Image
@@ -7,17 +7,16 @@ import glob
 import cv2
 import torch
 
-# Loading data
 
 IMG_TRANSFORMS = Compose([
     Resize((256, 256)),  # Resize the image to 256x256
-    # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),  # Random color jitter
+    ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),  # Random color jitter
     ToTensor(),  # Convert the image to a PyTorch tensor
-    # Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
+    Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
 ])
 
 MASK_TRANSFORMS = Compose([
-    Resize((256, 256)),  # Resize the image to 256x256
+    Resize((256, 256), interpolation=Image.NEAREST),  # Resize the image to 256x256
     ToTensor(),
 ])
 
@@ -26,10 +25,8 @@ COMMON_TRANSFORMS = Compose([
     RandomHorizontalFlip()
 ])
 
-# TODO: I wonder if my masks are RGB and not binary greyscale so that is why the model is not learning
-
 class SegmentationDataset(Dataset):
-    def __init__(self, img_dir, mask_dir, img_transform=None, mask_transform=None):
+    def __init__(self, img_dir, mask_dir, img_transforms=None, mask_transforms=None, common_transforms=None):
         """
         Custom dataset for segmentation tasks.
 
@@ -41,8 +38,9 @@ class SegmentationDataset(Dataset):
         """
         self.img_dir = img_dir
         self.mask_dir = mask_dir
-        self.img_transform = img_transform
-        self.mask_transform = mask_transform
+        self.img_transforms = img_transforms
+        self.mask_transforms = mask_transforms
+        self.common_transforms = common_transforms
 
         # List all image and mask files in the directories
         self.img_files = sorted(os.listdir(img_dir))
@@ -50,9 +48,6 @@ class SegmentationDataset(Dataset):
 
         # Check if the number of images and masks match
         assert len(self.img_files) == len(self.mask_files), "Number of images and masks must be the same."
-
-    # def binarize(self, image, threshold: int = 127) -> Image:
-    #     return image.point(lambda p: p > threshold and 255)
    
     def __len__(self):
         return len(self.img_files)
@@ -68,23 +63,18 @@ class SegmentationDataset(Dataset):
 
         mask = mask.convert("L")
 
-        # mask = self.binarize(mask)
+        if self.common_transforms:
+            img, mask = self.common_transforms(img, mask)
 
-        # Apply transformations, if specified
-        if self.img_transform:
-            img = self.img_transform(img)
+        if self.img_transforms:
+            img = self.img_transforms(img)
 
-        if self.mask_transform:
-            mask = self.mask_transform(mask)
+        if self.mask_transforms:
+            mask = self.mask_transforms(mask)
 
-            # binarize the mask tensor
+            # Binarize the mask tensor
             mask = (mask > 0.5).float()
-
-            # Normalize the mask to [0, 1] as tensors
-            # mask = mask / 255.0
-
         
-
         return img, mask
     
 
