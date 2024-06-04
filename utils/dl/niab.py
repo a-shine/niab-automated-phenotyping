@@ -104,7 +104,7 @@ class ActiveLearningDataset(Dataset):
 
         img = white_balance(cv2.imread(img_name))
 
-        # Open image and mask files
+        # Open image
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
         # Apply transformations, if specified

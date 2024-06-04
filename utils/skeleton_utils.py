@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import convolve
+from sklearn.cluster import DBSCAN
 
 # get the two points furthest apart in the skeleton
 def get_furthest_points(skeleton):
@@ -37,13 +38,8 @@ def get_endpoints(skeleton):
     # Apply the kernel to the skeleton
     convolved = convolve(skeleton, kernel, mode='constant', cval=0)
 
-    # visialize the convolved image
-    # plt.imshow(convolved, cmap='gray')
-
     # The endpoints are where the convolved image is 11
     endpoints = np.argwhere((convolved == 11))
-
-    # plt.scatter(endpoints[:, 1], endpoints[:, 0], color='red', s=10)
 
     return endpoints
 
@@ -57,10 +53,27 @@ def get_branching_points(skeleton):
     convolved = convolve(skeleton, kernel, mode='constant', cval=0)
 
     # The branching points are where the convolved image is 30 or more
-    branching_points = np.argwhere(convolved >= 13)
+    branching_points = np.argwhere(convolved == 13)
 
-    return branching_points
+    # To keep only one branching point per branch, you can use a clustering algorithm to group neighboring branching points together and then keep only one point from each cluster. A simple and efficient algorithm for this task is DBSCAN (Density-Based Spatial Clustering of Applications with Noise) from the sklearn library.
 
+    # DBSCAN groups together points that are packed closely together (points with many nearby neighbors), marking as outliers points that lie alone in low-density regions. The number of clusters, hence the number of branching points, is determined by the input parameters.
+
+    # Apply DBSCAN clustering
+    clustering = DBSCAN(eps=2, min_samples=1).fit(branching_points)
+
+    # Get the coordinates of the cluster centers
+    cluster_centers = []
+    for cluster_id in set(clustering.labels_):
+        cluster_points = branching_points[clustering.labels_ == cluster_id]
+        cluster_center = cluster_points.mean(axis=0)
+        cluster_centers.append(cluster_center)
+
+    return np.array(cluster_centers)
+
+    # return branching_points
+
+# make the kernel large not 8 point connected but 24 point connected so we can look further away
 def get_crossing_points(skeleton):
     # Define the convolutional kernel
     kernel = np.array([[1, 1, 1],
