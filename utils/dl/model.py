@@ -65,8 +65,19 @@ class Up(nn.Module):
         return self.conv(x)
 
 
-class OutConv(nn.Module):
+class OutConvWithSigmoid(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(OutConvWithSigmoid, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=1),
+            nn.Sigmoid()
+        )
 
+    def forward(self, x):
+        return self.conv(x)
+    
+
+class OutConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(OutConv, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
@@ -81,7 +92,9 @@ class MCDUNet(nn.Module):
                  n_classes: int = 1,
                  bilinear: bool =False,
                  ddims: List = [64, 128, 256, 512, 1024],
-                 UQ: bool =True):
+                 UQ: bool =True,
+                 activation: bool = False
+                 ):
         super(MCDUNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -101,7 +114,11 @@ class MCDUNet(nn.Module):
         self.up2 = (Up(udims[1], udims[2] // factor, bilinear))
         self.up3 = (Up(udims[2], udims[3] // factor, bilinear))
         self.up4 = (Up(udims[3], udims[4], bilinear))
-        self.outc = (OutConv(udims[4], n_classes))
+        
+        if activation:
+            self.outc = (OutConvWithSigmoid(udims[4], n_classes))
+        else:
+            self.outc = (OutConv(udims[4], n_classes))
 
     def forward(self, x):
         x1 = self.inc(x)
