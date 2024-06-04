@@ -28,10 +28,14 @@ torch.cuda.manual_seed_all(42)  # set torch seed
 # (overfitting)
 BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
 EPOCHS = 200
+MODEL_NAME = "deeplab"
+DATASET_NAME = "Annotated_Dataset_Partially_Corrected"
+
+print(f"Training model {MODEL_NAME} on dataset {DATASET_NAME}")
 
 data_processed = SegmentationDataset(
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/imgs", 
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/masks",
+    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/{DATASET_NAME}/imgs", 
+    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/{DATASET_NAME}/masks",
     img_transforms=IMG_TRANSFORMS,
     mask_transforms=MASK_TRANSFORMS,
     common_transforms=COMMON_TRANSFORMS
@@ -75,17 +79,37 @@ for X, y in validation_dataloader:
     print(f"Shape of y: {y.shape} {y.dtype}")
     break
 
-unet_dims: List = []
-for i in range(5):
-    unet_dims.append(2**(5 + i))
 
-# Create an instance of the model and move it to the device (GPU or CPU)
-model = MCDUNet(n_channels=3,
-             n_classes=1,
-             bilinear=True,
-             ddims=unet_dims,
-             UQ=True,
-             ).to(device)
+if MODEL_NAME == "unet":
+    model = smp.Unet(
+        encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+        in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+        classes=1,                      # model output channels (number of classes in your dataset)
+        activation="sigmoid"            # model output activation function (e.g. softmax for multiclass classification)
+    ).to(device)
+elif MODEL_NAME == "deeplab":
+    model = smp.DeepLabV3Plus(
+        encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+        in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.
+        classes=1,                      # model output channels (number of classes in your dataset
+        activation="sigmoid"            # model output activation function (e.g. softmax for multiclass classification)
+    ).to(device)
+elif MODEL_NAME == "mcdunet":
+    unet_dims: List = []
+    for i in range(5):
+        unet_dims.append(2**(5 + i))
+
+    # # Create an instance of the model and move it to the device (GPU or CPU)
+    model = MCDUNet(n_channels=3,
+                n_classes=1,
+                bilinear=True,
+                ddims=unet_dims,
+                UQ=True,
+                ).to(device)
+else:
+    raise ValueError("Model name not recognised. Please choose from 'unet', 'deeplab' or 'mcdunet'.")
 
 def fit(dataloader, model, loss_fn, optimizer, scheduler, device, log_freq=10) -> None:
     """
@@ -154,8 +178,8 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
             # Lets compute metrics for some threshold
             # first convert mask values to probabilities, then 
             # apply thresholding
-            prob_mask = pred.sigmoid()
-            pred_mask = (prob_mask > threshold).float()
+            # prob_mask = pred.sigmoid() - i think this is where the issue is (I apply sigmoid to a signmoid)
+            pred_mask = (pred > threshold).float()
 
             # Calculate true positives, false positives, false negatives, true negatives
             tp, fp, fn, tn = smp.metrics.get_stats(pred_mask.long(), y.long(), mode='binary')
@@ -176,7 +200,7 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
         "f1": avg_f1.item()
     }
 
-loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
+loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=False)
 optimizer = torch.optim.Adam(params = model.parameters(), lr = 3e-4) # high learning rate and allow it to decay
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)  # decay the learning rate by a factor of 0.1 every epoch
 
@@ -185,6 +209,11 @@ job_id = datetime.now().strftime("%Y%m%d%H%M%S")
 
 # Setting up directory to save models
 os.makedirs(f"/home/users/ashine/gws/niab-automated-phenotyping/models/{job_id}", exist_ok=True)
+
+# write model arch and dataset used to a file
+with open(f"/home/users/ashine/gws/niab-automated-phenotyping/models/{job_id}/desc.txt", "w") as f:
+    f.write(f"Model: {MODEL_NAME}\n")
+    f.write(f"Dataset: {DATASET_NAME}\n")
 
 # create a pd dataframe to store metrics
 val_metrics_df = pd.DataFrame([], columns=["epoch", "train_loss", "val_loss", "val_iou_score", "val_f1"])
