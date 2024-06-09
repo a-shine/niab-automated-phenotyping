@@ -1,6 +1,7 @@
 datasets/
 output/
 models/
+models_2/
 
 # VS Code
 .vscode/
