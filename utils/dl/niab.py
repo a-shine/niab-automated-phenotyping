@@ -15,6 +15,12 @@ IMG_TRANSFORMS = Compose([
     Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
 ])
 
+IMG_TRANSFORMS_NO_JITTER = Compose([
+    Resize((256, 256)),  # Resize the image to 256x256
+    ToTensor(),  # Convert the image to a PyTorch tensor
+    Normalize(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0])  # Normalize
+])
+
 MASK_TRANSFORMS = Compose([
     Resize((256, 256), interpolation=Image.NEAREST),  # Resize the image to 256x256
     ToTensor(),
@@ -79,18 +85,16 @@ class SegmentationDataset(Dataset):
     
 
 class ActiveLearningDataset(Dataset):
-    def __init__(self, img_dir, img_transform=None):
+    def __init__(self, img_dir, img_transforms=None):
         """
         Custom dataset for segmentation tasks.
 
         Args:
             img_dir (str): Path to the folder containing images.
-            mask_dir (str): Path to the folder containing masks.
-            img_transform (callable, optional): Optional transform to be applied to the image.
-            mask_transform (callable, optional): Optional transform to be applied to the mask.
+            img_transforms (callable, optional): Optional transform to be applied to the image.
         """
         self.img_dir = img_dir
-        self.img_transform = img_transform
+        self.img_transforms = img_transforms
 
         # List all image and mask files in the directories
         self.img_files = sorted(glob.glob(f"{img_dir}/*/*/*.jpg"))
@@ -102,14 +106,15 @@ class ActiveLearningDataset(Dataset):
         # Get the file names for the corresponding image and mask
         img_name = os.path.join(self.img_files[idx])
 
-        img = white_balance(cv2.imread(img_name))
+        img = cv2.imread(img_name)
 
-        # Open image
-        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        wb_img = white_balance(img)
+        
+        img = Image.fromarray(cv2.cvtColor(wb_img, cv2.COLOR_BGR2RGB))
 
         # Apply transformations, if specified
-        if self.img_transform:
-            img = self.img_transform(img)
+        if self.img_transforms:
+            img = self.img_transforms(img)
 
         return img_name, img
     
