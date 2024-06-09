@@ -2,7 +2,7 @@
 
 from typing import List
 from torch.utils.data import random_split
-from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS, MASK_TRANSFORMS, COMMON_TRANSFORMS
+from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS
 import segmentation_models_pytorch as smp
 import torch
 import torch.backends.mps
@@ -13,24 +13,16 @@ BATCH_SIZE = 16
 
 torch.cuda.manual_seed_all(42)  # set torch seed
 
-data_processed = SegmentationDataset(
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/imgs", 
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Dataset_Fully_Corrected/masks",
-    img_transforms=IMG_TRANSFORMS,
+test_dataset = SegmentationDataset(
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Test_Dataset/imgs", 
+    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Test_Dataset/masks",
+    img_transforms=IMG_TRANSFORMS_NO_JITTER,
     mask_transforms=MASK_TRANSFORMS,
-    common_transforms=COMMON_TRANSFORMS
+    common_transforms=None
 )
 
 # Split the dataset into training and validation sets
-total_size = len(data_processed)
-
-# Split the dataset into training, validation and test sets
-total_size = len(data_processed)
-train_size = int(0.8 * total_size)  # 80% for training
-val_size = int(0.1 * total_size)  # 10% for validation
-test_size = total_size - train_size - val_size  # ~10% for testing
-
-_, _, test_dataset = random_split(data_processed, [train_size, val_size, test_size])
+total_size = len(test_dataset)
 
 print(f"Size of test dataset: {len(test_dataset)}")
 
@@ -39,35 +31,37 @@ print(f"Size of test dataset: {len(test_dataset)}")
 device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Training/fitting using {device} device")
 
-# unet_dims: List = []
-# for i in range(5):
-#     unet_dims.append(2**(5 + i))
+unet_dims: List = []
+for i in range(5):
+    unet_dims.append(2**(5 + i))
 
-# # Create an instance of the model and move it to the device (GPU or CPU)
-# model = MCDUNet(n_channels=3,
-#              n_classes=1,
-#              bilinear=True,
-#              ddims=unet_dims,
-#              UQ=True,
-#              ).to(device)
+# Create an instance of the model and move it to the device (GPU or CPU)
+model = MCDUNet(n_channels=3,
+             n_classes=1,
+             bilinear=True,
+             ddims=unet_dims,
+             UQ=True,
+             activation=True,
+             ).to(device)
 
-model = smp.Unet(
-    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-    classes=1,                      # model output channels (number of classes in your dataset)
-    activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
-).to(device)
+# model = smp.Unet(
+#     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+#     encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+#     in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+#     classes=1,                      # model output channels (number of classes in your dataset)
+#     activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
+# ).to(device)
 
 # model = smp.DeepLabV3Plus(
 #     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
 #     encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
 #     in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.
 #     classes=1,                      # model output channels (number of classes in your dataset
+#     activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
 # ).to(device)
 
 # Load the model
-model.load_state_dict(torch.load("/home/users/ashine/gws/niab-automated-phenotyping/models/20240603152952/best_model.pth"))
+model.load_state_dict(torch.load("/home/users/ashine/gws/niab-automated-phenotyping/models_2/20240607144220/best_model.pth"))
 
 def validate(dataloader, model, loss_fn, threshold=0.5):
     num_batches = len(dataloader)
@@ -114,7 +108,7 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
         "f1": avg_f1.item()
     }
 
-loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
+loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=False)
 
 # test performance
 test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
