@@ -50,7 +50,6 @@ csv.write("img_path,mean_uncertainty,mcd_uncertainty\n")
 
 # Loop through the dataset and run prediction with uncertainty
 for name, image in niab_dataset:
-    # print(f"Processing image: {name}")
     m, u = predict_with_uncertainty(model, image)
 
     # Calculate mean uncertainty per pixel (useful if you want to know how uncertain the model is on average for each pixel)
