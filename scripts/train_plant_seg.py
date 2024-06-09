@@ -28,8 +28,8 @@ torch.cuda.manual_seed_all(42)  # set torch seed
 # (overfitting)
 BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
 EPOCHS = 200
-MODEL_NAME = "deeplab"
-DATASET_NAME = "Annotated_Dataset_Partially_Corrected"
+MODEL_NAME = "mcdunet"
+DATASET_NAME = "Annotated_Dataset_Most_Uncertain"
 
 print(f"Training model {MODEL_NAME} on dataset {DATASET_NAME}")
 
@@ -44,18 +44,16 @@ data_processed = SegmentationDataset(
 # Split the dataset into training and validation sets
 total_size = len(data_processed)
 
-# Split the dataset into training, validation and test sets
+# Split the dataset into training, validation sets
 total_size = len(data_processed)
-train_size = int(0.8 * total_size)  # 80% for training
-val_size = int(0.1 * total_size)  # 10% for validation
-test_size = total_size - train_size - val_size  # ~10% for testing
+train_size = int(0.9 * total_size)  # 90% of the data for training
+val_size = total_size - train_size  # 10% of the data for validation
 
-training_dataset, validation_dataset, test_dataset = random_split(data_processed, [train_size, val_size, test_size])
+training_dataset, validation_dataset = random_split(data_processed, [train_size, val_size])
 
 # How much data?
 print(f"Size of training dataset: {len(training_dataset)}")
 print(f"Size of validation dataset: {len(validation_dataset)}")
-print(f"Size of test dataset: {len(test_dataset)}")
 
 # Post-transformation, what does the data look like?
 print(f"Shape of first input entry (post-transformation): {data_processed[0][0].shape}")
@@ -107,6 +105,7 @@ elif MODEL_NAME == "mcdunet":
                 bilinear=True,
                 ddims=unet_dims,
                 UQ=True,
+                activation=True,
                 ).to(device)
 else:
     raise ValueError("Model name not recognised. Please choose from 'unet', 'deeplab' or 'mcdunet'.")
@@ -239,12 +238,6 @@ for t in range(EPOCHS):
         best_loss = val_metrics["loss"]
         torch.save(model.state_dict(), f"/home/users/ashine/gws/niab-automated-phenotyping/models/{job_id}/best_model.pth")
         print("Saved best model")
-
-# test performance
-test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
-test_metrics = validate(test_dataloader, model, loss_fn)
-print(f"Test Metrics:\n- Avg loss: {test_metrics['loss']:>8f}\n- IoU Score: {test_metrics['iou_score']:>8f}\n- F1 Score: {test_metrics['f1']:>8f}\n")
-
 
 # Initial plot of train and val loss
 plt.figure()
