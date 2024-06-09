@@ -1,19 +1,18 @@
 # Batch script that runes inference with uncertainty on the images in the 
 # dataset.
 
-from utils.dl.niab import IMG_TRANSFORMS, ActiveLearningDataset
+from utils.dl.niab import IMG_TRANSFORMS_NO_JITTER, ActiveLearningDataset
 import torch
 from utils.dl.model import MCDUNet
 
-dataset = ActiveLearningDataset("/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename", IMG_TRANSFORMS)
+niab_dataset = ActiveLearningDataset("/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename", IMG_TRANSFORMS_NO_JITTER)
 
-MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240514122226/best_model.pth"
+MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240605150017/best_model.pth"
 
 device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Running model using {device} device")
 
-# TODO: let's see if there is any variance (if none then the model might not have dropout layers so we need to add them)
-def predict_with_uncertainty(model, image, n_times=200):
+def predict_with_uncertainty(model, image, n_times=500):
     # Set model to training mode to enable dropout at test time
     model.train()
 
@@ -40,23 +39,21 @@ model = MCDUNet(n_channels=3,
              bilinear=True,
              ddims=[32, 64, 128, 256, 512],
              UQ=True,
+             activation=True,
              ).to(device)
 
 model.load_state_dict(torch.load(MODEL_PATH))
-
-# TODO: not added dropout layers to the model - need to find a way to add dropout layers to the model
-# Test adding dropout with the aux_ parameters (just train trhe model for 5 epochs and test with this script to see if there are any uncertainties i.e. that the model is non-deterministic)
 
 # create a csv with two columns: image_name, uncertainty
 csv = open("/home/users/ashine/gws/niab-automated-phenotyping/uncertainty.csv", "w")
 csv.write("img_path,mean_uncertainty,mcd_uncertainty\n")
 
 # Loop through the dataset and run prediction with uncertainty
-for name, image in dataset:
+for name, image in niab_dataset:
+    # print(f"Processing image: {name}")
     m, u = predict_with_uncertainty(model, image)
 
     # Calculate mean uncertainty per pixel (useful if you want to know how uncertain the model is on average for each pixel)
-    # TODO: how could the mean uncertay be greater than 1? areneth the predction values all betwene 0 and 1
     mean_uncertainty = torch.mean(u)
     
     # The original definition of MCD uncertainty involves normalizing by the volume 
@@ -76,8 +73,9 @@ for name, image in dataset:
     # mcd_uncertainty = torch.sum(u) / torch.numel(u)
     # Calculate MCD Uncertainty within the predicted mask
     mask = m > 0.5  # replace 'threshold' with appropriate value
-    mcd_uncertainty = torch.sum(u[mask]) / torch.sum(mask)
+    
+    mcd_uncertainty = (torch.sum(u[mask]) / torch.sum(mask)).item() if torch.sum(mask) > 0 else 0.0
 
-    print(f"Image name: {name}, Mean uncertainty: {mean_uncertainty.item()}, MCD Uncertainty: {mcd_uncertainty.item()}")
+    print(f"Image name: {name}, Mean uncertainty: {mean_uncertainty.item()}, MCD Uncertainty: {mcd_uncertainty}")
 
-    csv.write(f"{name},{mean_uncertainty.item()},{mcd_uncertainty.item()}\n")
+    csv.write(f"{name},{mean_uncertainty.item()},{mcd_uncertainty}\n")
