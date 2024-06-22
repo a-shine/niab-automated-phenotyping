@@ -50,6 +50,11 @@ The description of the available annotated datasets can be found in the followin
 | Fully corrected w. active learning | This is the Fully corrected dataset mentioned above (280 images) with the addition of the 20 images in in the remainder of the dataset that introduced the most MC uncertainty. |
 | Fully corrected w. random  | This is the Fully corrected dataset mentioned above (280 images) with the addition of 20 images picked at random throughout the remaining dataset. |
 
+Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027
+
+Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050
+
+
 ## Installation and usage
 
 To install the required dependencies and source files, follow these steps:
