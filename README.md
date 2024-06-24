@@ -22,6 +22,7 @@
 * [.assets/](./.assets/): assets such as images used in the README
 * [archive/](./archive/): old files that may be useful for reference
 * [notebooks/](./notebooks/): main Jupyter notebooks of the project
+<!-- TODO: add small descriptive sentence for each notebooks purpose -->
 * [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
 * [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
 
@@ -51,6 +52,8 @@ The description of the available annotated datasets can be found in the followin
 | Fully corrected w. random  | This is the Fully corrected dataset mentioned above (280 images) with the addition of 20 images picked at random throughout the remaining dataset. |
 
 ## Installation and usage
+
+<!-- TODO: Add quick colab version of notebook 12 to run through notebook with sample data for reproducibility -->
 
 To install the required dependencies and source files, follow these steps:
 
