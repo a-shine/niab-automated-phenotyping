@@ -5,7 +5,6 @@
 # here: https://github.com/qubvel/segmentation_models.pytorch/blob/master/examples/binary_segmentation_intro.ipynb
 
 import os
-from typing import List
 from torch.utils.data import random_split
 from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS, MASK_TRANSFORMS, COMMON_TRANSFORMS
 import segmentation_models_pytorch as smp
@@ -19,6 +18,7 @@ import matplotlib.pyplot as plt
 
 
 torch.cuda.manual_seed_all(42)  # set torch seed
+torch.manual_seed(42)  # set torch seed
 
 # Parameters
 # https://ai.stackexchange.com/questions/8560/how-do-i-choose-the-optimal-batch-size
@@ -29,13 +29,13 @@ torch.cuda.manual_seed_all(42)  # set torch seed
 BATCH_SIZE = 2 ** 4  # should be divisible by the training dataset size
 EPOCHS = 200
 MODEL_NAME = "mcdunet"
-DATASET_NAME = "Annotated_Dataset_Most_Uncertain"
+DATASET_NAME = "Partially_Corrected"
 
 print(f"Training model {MODEL_NAME} on dataset {DATASET_NAME}")
 
 data_processed = SegmentationDataset(
-    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/{DATASET_NAME}/imgs", 
-    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/{DATASET_NAME}/masks",
+    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/{DATASET_NAME}/Imgs", 
+    f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/{DATASET_NAME}/Masks",
     img_transforms=IMG_TRANSFORMS,
     mask_transforms=MASK_TRANSFORMS,
     common_transforms=COMMON_TRANSFORMS
@@ -95,15 +95,11 @@ elif MODEL_NAME == "deeplab":
         activation="sigmoid"            # model output activation function (e.g. softmax for multiclass classification)
     ).to(device)
 elif MODEL_NAME == "mcdunet":
-    unet_dims: List = []
-    for i in range(5):
-        unet_dims.append(2**(5 + i))
-
-    # # Create an instance of the model and move it to the device (GPU or CPU)
+    # Create an instance of the model and move it to the device (GPU or CPU)
     model = MCDUNet(n_channels=3,
                 n_classes=1,
                 bilinear=True,
-                ddims=unet_dims,
+                ddims=[32, 64, 128, 256, 512],
                 UQ=True,
                 activation=True,
                 ).to(device)
@@ -200,6 +196,7 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
     }
 
 loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=False)
+
 optimizer = torch.optim.Adam(params = model.parameters(), lr = 3e-4) # high learning rate and allow it to decay
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)  # decay the learning rate by a factor of 0.1 every epoch
 
