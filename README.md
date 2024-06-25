@@ -22,7 +22,7 @@
 ## Repo structure
 
 * [.assets/](./.assets/): Assets such as images used in the README and notebooks
-* [archive/](./archive/): Old files that may be useful for reference
+* [archive/](./archive/): Unused files that may be useful for reference
 * [notebooks/](./notebooks/): Main Jupyter notebooks for the project
   *  [011-identifying-pot-rim.ipynb](./notebooks/011-identifying-pot-rim.ipynb): Pot rim tracking using the Circle Hough Transform algorithm
   * **[012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb)**: Complete canopy coverage tracking phenotyping pipeline
