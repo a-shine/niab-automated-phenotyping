@@ -1,6 +1,7 @@
+import os
+
 import cv2
 import numpy as np
-import os
 
 # Define the drawing state and color
 drawing = False
@@ -8,24 +9,25 @@ class_id = 1
 ix, iy = -1, -1
 min_line_width = 2
 max_line_width = 4
-output_dir = 'output'
+output_dir = "output"
 img_count = 0
-auto_increment = True 
+auto_increment = True
 
 # Create the output directory if it doesn't exist
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # create output/binary_masks directory
-if not os.path.exists(os.path.join(output_dir, 'binary_masks')):
-    os.makedirs(os.path.join(output_dir, 'binary_masks'))
+if not os.path.exists(os.path.join(output_dir, "binary_masks")):
+    os.makedirs(os.path.join(output_dir, "binary_masks"))
 
 # create instance_masks directory
-if not os.path.exists(os.path.join(output_dir, 'instance_masks')):
-    os.makedirs(os.path.join(output_dir, 'instance_masks'))
+if not os.path.exists(os.path.join(output_dir, "instance_masks")):
+    os.makedirs(os.path.join(output_dir, "instance_masks"))
 
 # Create a black image for the binary mask
 binary_mask = np.zeros((345, 460), np.uint8)
+
 
 # Mouse callback function
 def draw_line(event, x, y, flags, param):
@@ -50,28 +52,35 @@ def draw_line(event, x, y, flags, param):
         cv2.line(instance_mask, (ix, iy), (x, y), class_id, line_width)
         cv2.line(binary_mask, (ix, iy), (x, y), 255, line_width)
 
+
 # Create a black image and a window
 instance_mask = np.zeros((345, 460), np.uint8)
-cv2.namedWindow('image')
-cv2.setMouseCallback('image', draw_line)
+cv2.namedWindow("image")
+cv2.setMouseCallback("image", draw_line)
 
-while(1):
+while 1:
     # Normalize the grayscale values to the full range of 0-255
-    img_normalized = cv2.normalize(instance_mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    img_normalized = cv2.normalize(
+        instance_mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U
+    )
 
     # Apply the rainbow colormap to the normalized image
     display_image = cv2.applyColorMap(img_normalized, cv2.COLORMAP_JET)
-    cv2.imshow('image', display_image)
+    cv2.imshow("image", display_image)
     k = cv2.waitKey(1) & 0xFF
-    if k == ord('i'):  # Press 'n' to change the class
+    if k == ord("i"):  # Press 'n' to change the class
         class_id += 1
-    elif k == ord('a'):  # Press 'a' to toggle auto increment
+    elif k == ord("a"):  # Press 'a' to toggle auto increment
         auto_increment = not auto_increment
-        print(f'Auto increment: {auto_increment}')
-    elif k == ord('n'):  # Press 't' to save the current image and create a new one
+        print(f"Auto increment: {auto_increment}")
+    elif k == ord("n"):  # Press 't' to save the current image and create a new one
         class_id = 1
-        cv2.imwrite(os.path.join(output_dir, f'binary_masks/{img_count}.png'), binary_mask)
-        cv2.imwrite(os.path.join(output_dir, f'instance_masks/{img_count}.png'), instance_mask)
+        cv2.imwrite(
+            os.path.join(output_dir, f"binary_masks/{img_count}.png"), binary_mask
+        )
+        cv2.imwrite(
+            os.path.join(output_dir, f"instance_masks/{img_count}.png"), instance_mask
+        )
         instance_mask = np.zeros((345, 460), np.uint8)
         binary_mask = np.zeros((345, 460), np.uint8)
         img_count += 1

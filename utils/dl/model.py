@@ -1,9 +1,11 @@
 # https://github.com/samirapakravan/segmentation_uq/tree/main
 
 from typing import List
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
@@ -18,7 +20,7 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 
     def forward(self, x):
@@ -31,8 +33,7 @@ class Down(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.maxpool_conv = nn.Sequential(
-            nn.MaxPool2d(2),
-            DoubleConv(in_channels, out_channels)
+            nn.MaxPool2d(2), DoubleConv(in_channels, out_channels)
         )
 
     def forward(self, x):
@@ -47,10 +48,12 @@ class Up(nn.Module):
 
         # if bilinear, use the normal convolutions to reduce the number of channels
         if bilinear:
-            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
             self.conv = DoubleConv(in_channels, out_channels, in_channels // 2)
         else:
-            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
+            self.up = nn.ConvTranspose2d(
+                in_channels, in_channels // 2, kernel_size=2, stride=2
+            )
             self.conv = DoubleConv(in_channels, out_channels)
 
     def forward(self, x1, x2):
@@ -59,8 +62,7 @@ class Up(nn.Module):
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
 
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                        diffY // 2, diffY - diffY // 2])
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
         x = torch.cat([x2, x1], dim=1)
         return self.conv(x)
 
@@ -69,13 +71,12 @@ class OutConvWithSigmoid(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(OutConvWithSigmoid, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=1),
-            nn.Sigmoid()
+            nn.Conv2d(in_channels, out_channels, kernel_size=1), nn.Sigmoid()
         )
 
     def forward(self, x):
         return self.conv(x)
-    
+
 
 class OutConv(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -87,38 +88,39 @@ class OutConv(nn.Module):
 
 
 class MCDUNet(nn.Module):
-    def __init__(self,
-                 n_channels: int = 3,
-                 n_classes: int = 1,
-                 bilinear: bool =False,
-                 ddims: List = [64, 128, 256, 512, 1024],
-                 UQ: bool =True,
-                 activation: bool = False
-                 ):
+    def __init__(
+        self,
+        n_channels: int = 3,
+        n_classes: int = 1,
+        bilinear: bool = False,
+        ddims: List = [64, 128, 256, 512, 1024],
+        UQ: bool = True,
+        activation: bool = False,
+    ):
         super(MCDUNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
         factor = 2 if bilinear else 1
         udims = ddims[::-1]
-        
-        self.dropout = nn.Dropout(p=0.5 if UQ else 0.0)
-        
-        self.inc = (DoubleConv(n_channels, ddims[0]))
-        self.down1 = (Down(ddims[0], ddims[1]))
-        self.down2 = (Down(ddims[1], ddims[2]))
-        self.down3 = (Down(ddims[2], ddims[3]))
-        self.down4 = (Down(ddims[3], ddims[4] // factor))
 
-        self.up1 = (Up(udims[0], udims[1] // factor, bilinear))
-        self.up2 = (Up(udims[1], udims[2] // factor, bilinear))
-        self.up3 = (Up(udims[2], udims[3] // factor, bilinear))
-        self.up4 = (Up(udims[3], udims[4], bilinear))
-        
+        self.dropout = nn.Dropout(p=0.5 if UQ else 0.0)
+
+        self.inc = DoubleConv(n_channels, ddims[0])
+        self.down1 = Down(ddims[0], ddims[1])
+        self.down2 = Down(ddims[1], ddims[2])
+        self.down3 = Down(ddims[2], ddims[3])
+        self.down4 = Down(ddims[3], ddims[4] // factor)
+
+        self.up1 = Up(udims[0], udims[1] // factor, bilinear)
+        self.up2 = Up(udims[1], udims[2] // factor, bilinear)
+        self.up3 = Up(udims[2], udims[3] // factor, bilinear)
+        self.up4 = Up(udims[3], udims[4], bilinear)
+
         if activation:
-            self.outc = (OutConvWithSigmoid(udims[4], n_classes))
+            self.outc = OutConvWithSigmoid(udims[4], n_classes)
         else:
-            self.outc = (OutConv(udims[4], n_classes))
+            self.outc = OutConv(udims[4], n_classes)
 
     def forward(self, x):
         x1 = self.inc(x)

@@ -1,16 +1,19 @@
-# Batch script to run HSV segmentation based on specified HSV thresholds on the 
+# Batch script to run HSV segmentation based on specified HSV thresholds on the
 # images in the dataset.
 
+import glob
 import os
+
 import cv2
 import numpy as np
-import glob
+
 from utils.image_utils import white_balance as wb
 
 HSVMIN_RAW = (30, 170, 0)
 HSVMAX_RAW = (65, 255, 255)
 HSVMIN_WB = (30, 80, 0)
-HSVMAX_WB = (65,255, 255)
+HSVMAX_WB = (65, 255, 255)
+
 
 def segment_plants(img):
     # lower_raw = np.array(HSVMIN_RAW)
@@ -31,23 +34,27 @@ def segment_plants(img):
     # mask = cv2.bitwise_or(mask_raw, mask_wb)
 
     # Clean up the mask
-    kernel = np.ones((3,3), np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
     opening = cv2.morphologyEx(mask_wb, cv2.MORPH_OPEN, kernel)
     output = cv2.dilate(opening, kernel, iterations=10)
 
     return wb_img, output
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Get all the images in the folder and subfolders of ./datasets/niab
-    images = glob.glob('./datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename/EXP01_Block01/EXP01_Block01_Rename07_20201206/*.jpg', recursive=True)
+    images = glob.glob(
+        "./datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename/EXP01_Block01/EXP01_Block01_Rename07_20201206/*.jpg",
+        recursive=True,
+    )
 
     # Create the output folder
-    if not os.path.exists('./output'):
-        os.makedirs('./output')
+    if not os.path.exists("./output"):
+        os.makedirs("./output")
 
         # make a img and mask folder
-        os.makedirs('./output/img')
-        os.makedirs('./output/mask')
+        os.makedirs("./output/img")
+        os.makedirs("./output/mask")
 
     # Loop through all the images in th
     for i in range(len(images)):
@@ -55,7 +62,7 @@ if __name__ == '__main__':
         wb_img, mask = segment_plants(img)
 
         # Save the images and masks
-        cv2.imwrite('./output/imgs/' + os.path.basename(images[i]), wb_img)
-        cv2.imwrite('./output/masks/' + os.path.basename(images[i]), mask)
+        cv2.imwrite("./output/imgs/" + os.path.basename(images[i]), wb_img)
+        cv2.imwrite("./output/masks/" + os.path.basename(images[i]), mask)
 
-        print('Processed: ' + str(i) + ' of ' + str(len(images)) + ' images')
+        print("Processed: " + str(i) + " of " + str(len(images)) + " images")

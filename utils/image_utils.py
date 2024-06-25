@@ -1,6 +1,8 @@
 import glob
+
 import cv2
 import numpy as np
+
 
 def load_image_ts(dataset_root: str, exp: int, block: int, pot: int) -> list[cv2.Mat]:
     """
@@ -20,7 +22,10 @@ def load_image_ts(dataset_root: str, exp: int, block: int, pot: int) -> list[cv2
     base_path = f"{dataset_root}/EXP{exp:02d}/Top_Images/Top_Images_Clean_Rename/EXP{exp:02d}_Block{block:02d}/"
 
     # Use glob to get all the image file paths
-    image_paths = glob.glob(base_path + f"EXP{exp:02d}_Block{block:02d}_Rename*/Exp{exp:02d}_Block{block:02d}_Image*_Pot{pot:03d}.jpg")
+    image_paths = glob.glob(
+        base_path
+        + f"EXP{exp:02d}_Block{block:02d}_Rename*/Exp{exp:02d}_Block{block:02d}_Image*_Pot{pot:03d}.jpg"
+    )
 
     # Sort the paths to ensure they are in the correct order
     image_paths.sort()
@@ -30,13 +35,14 @@ def load_image_ts(dataset_root: str, exp: int, block: int, pot: int) -> list[cv2
 
     return images
 
+
 def reduce_resolution(image: cv2.Mat, scale_percent: int) -> cv2.Mat:
     """
     Reduce the resolution of an image by a certain percentage.
 
     Args:
         image (cv2.Mat): The original image.
-        scale_percent (int): The percentage of the original size to which the image should be scaled. 
+        scale_percent (int): The percentage of the original size to which the image should be scaled.
                              For example, if scale_percent is 50, the image will be half its original size.
 
     Returns:
@@ -47,6 +53,7 @@ def reduce_resolution(image: cv2.Mat, scale_percent: int) -> cv2.Mat:
     dim = (width, height)
 
     return cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+
 
 def white_balance(image: cv2.Mat) -> cv2.Mat:
     """
@@ -64,7 +71,11 @@ def white_balance(image: cv2.Mat) -> cv2.Mat:
     result = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     avg_a = np.average(result[:, :, 1])
     avg_b = np.average(result[:, :, 2])
-    result[:, :, 1] = result[:, :, 1] - ((avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1)
-    result[:, :, 2] = result[:, :, 2] - ((avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result[:, :, 1] = result[:, :, 1] - (
+        (avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1
+    )
+    result[:, :, 2] = result[:, :, 2] - (
+        (avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1
+    )
     result = cv2.cvtColor(result, cv2.COLOR_LAB2BGR)
     return result

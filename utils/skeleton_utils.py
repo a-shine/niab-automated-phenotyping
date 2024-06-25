@@ -2,6 +2,7 @@ import numpy as np
 from scipy.ndimage import convolve
 from sklearn.cluster import DBSCAN
 
+
 # get the two points furthest apart in the skeleton
 def get_furthest_points(skeleton):
     # Get the coordinates of the skeleton
@@ -19,38 +20,38 @@ def get_furthest_points(skeleton):
 
     return point1, point2
 
+
 def get_first_and_last_point(skeleton):
     # Get the coordinates of the skeleton
     coords = np.argwhere(skeleton)
 
     return coords[0], coords[-1]
 
+
 def first_n_last_conv(skeleton):
     pass
+
 
 # Endpoints are defined as pixels that have only one neighbor so the convolutional result for that pixel would be itsles (the value at the center of the kernel) + 1 (for the neighbor)
 def get_endpoints(skeleton):
     # Define the convolutional kernel
-    kernel = np.array([[1, 1, 1],
-                       [1, 10, 1],
-                       [1, 1, 1]])
+    kernel = np.array([[1, 1, 1], [1, 10, 1], [1, 1, 1]])
 
     # Apply the kernel to the skeleton
-    convolved = convolve(skeleton, kernel, mode='constant', cval=0)
+    convolved = convolve(skeleton, kernel, mode="constant", cval=0)
 
     # The endpoints are where the convolved image is 11
     endpoints = np.argwhere((convolved == 11))
 
     return endpoints
 
+
 def get_branching_points(skeleton):
     # Define the convolutional kernel
-    kernel = np.array([[1, 1, 1],
-                       [1, 10, 1],
-                       [1, 1, 1]])
+    kernel = np.array([[1, 1, 1], [1, 10, 1], [1, 1, 1]])
 
     # Apply the kernel to the skeleton
-    convolved = convolve(skeleton, kernel, mode='constant', cval=0)
+    convolved = convolve(skeleton, kernel, mode="constant", cval=0)
 
     # The branching points are where the convolved image is 30 or more
     branching_points = np.argwhere(convolved == 13)
@@ -73,15 +74,14 @@ def get_branching_points(skeleton):
 
     # return branching_points
 
+
 # make the kernel large not 8 point connected but 24 point connected so we can look further away
 def get_crossing_points(skeleton):
     # Define the convolutional kernel
-    kernel = np.array([[1, 1, 1],
-                       [1, 10, 1],
-                       [1, 1, 1]])
+    kernel = np.array([[1, 1, 1], [1, 10, 1], [1, 1, 1]])
 
     # Apply the kernel to the skeleton
-    convolved = convolve(skeleton, kernel, mode='constant', cval=0)
+    convolved = convolve(skeleton, kernel, mode="constant", cval=0)
 
     # The crossing points are where the convolved image is 40 or more
     crossing_points = np.argwhere(convolved >= 14)

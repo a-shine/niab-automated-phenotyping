@@ -1,5 +1,6 @@
 import torch
 
+
 def predict_with_uncertainty(model, image, device, n_times=200):
     # Set model to training mode to enable dropout at test time
     model.train()
