@@ -69,13 +69,13 @@ for mask_file in mask_files:
         key = cv2.waitKey(1) & 0xFF
         if key == ord("n"):
             cv2.imwrite(mask_file, canvas)
-            print(f"Saved mask and moving to next mask")
+            print("Saved mask and moving to next mask")
             print(f"Current index: {current_index} out of {total_files}")
             current_index += 1
             break
         elif key == ord("s"):
             # Save the mask
             cv2.imwrite(mask_file, canvas)
-            print(f"Saved mask")
+            print("Saved mask")
 
 cv2.destroyAllWindows()

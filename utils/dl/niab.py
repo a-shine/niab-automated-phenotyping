@@ -5,14 +5,8 @@ import cv2
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision.transforms.v2 import (
-    ColorJitter,
-    Compose,
-    Normalize,
-    RandomHorizontalFlip,
-    Resize,
-    ToTensor,
-)
+from torchvision.transforms.v2 import (ColorJitter, Compose, Normalize,
+                                       RandomHorizontalFlip, Resize, ToTensor)
 
 from utils.image_utils import white_balance
 

@@ -5,8 +5,8 @@ import torch
 import torch.backends.mps
 from torch.utils.data import DataLoader
 
-from utils.dl.model import MCDUNet
-from utils.dl.niab import IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS, SegmentationDataset
+from utils.dl.niab import (IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS,
+                           SegmentationDataset)
 
 BATCH_SIZE = 16
 MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240624182742/best_model.pth"

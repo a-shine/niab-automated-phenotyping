@@ -29,14 +29,9 @@ repos:
       - id: isort
         name: Format imports
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.10.1
-    hooks:
-      - id: black-jupyter
-        name: Format code
-        additional_dependencies: ['click==8.0.2']
-
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: 'v0.1.4'
     hooks:
+      # fix argument is optional, default is False
       - id: ruff  # (Linter) Check for common mistakes in Python code
+        args: ['--fix']
