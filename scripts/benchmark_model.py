@@ -1,7 +1,5 @@
 # Benchmark model on fully corrected annotated dataset (accurate ground truth)
 
-from typing import List
-from torch.utils.data import random_split
 from utils.dl.niab import SegmentationDataset, IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS
 import segmentation_models_pytorch as smp
 import torch
@@ -10,8 +8,7 @@ from torch.utils.data import DataLoader
 from utils.dl.model import MCDUNet
 
 BATCH_SIZE = 16
-
-torch.cuda.manual_seed_all(42)  # set torch seed
+MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240624182742/best_model.pth"
 
 test_dataset = SegmentationDataset(
     "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Test_Dataset/imgs", 
@@ -31,26 +28,22 @@ print(f"Size of test dataset: {len(test_dataset)}")
 device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Training/fitting using {device} device")
 
-unet_dims: List = []
-for i in range(5):
-    unet_dims.append(2**(5 + i))
-
 # Create an instance of the model and move it to the device (GPU or CPU)
-model = MCDUNet(n_channels=3,
-             n_classes=1,
-             bilinear=True,
-             ddims=unet_dims,
-             UQ=True,
-             activation=True,
-             ).to(device)
+# model = MCDUNet(n_channels=3,
+#              n_classes=1,
+#              bilinear=True,
+#              ddims=[32, 64, 128, 256, 512],
+#              UQ=True,
+#              activation=True,
+#              ).to(device)
 
-# model = smp.Unet(
-#     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-#     encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-#     in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-#     classes=1,                      # model output channels (number of classes in your dataset)
-#     activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
-# ).to(device)
+model = smp.Unet(
+    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+    classes=1,                      # model output channels (number of classes in your dataset)
+    activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
+).to(device)
 
 # model = smp.DeepLabV3Plus(
 #     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
@@ -61,7 +54,7 @@ model = MCDUNet(n_channels=3,
 # ).to(device)
 
 # Load the model
-model.load_state_dict(torch.load("/home/users/ashine/gws/niab-automated-phenotyping/models_2/20240607144220/best_model.pth"))
+model.load_state_dict(torch.load(MODEL_PATH))
 
 def validate(dataloader, model, loss_fn, threshold=0.5):
     num_batches = len(dataloader)
