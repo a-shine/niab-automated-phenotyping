@@ -3,8 +3,8 @@
 
 import torch
 
-from utils.dl.model import MCDUNet
-from utils.dl.niab import IMG_TRANSFORMS_NO_JITTER, ActiveLearningDataset
+from utils.dl.models.mcd_unet import MCDUNet
+from utils.dl.dataset import IMG_TRANSFORMS_NO_JITTER, ActiveLearningDataset
 
 niab_dataset = ActiveLearningDataset(
     "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename",

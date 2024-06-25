@@ -14,8 +14,8 @@ import torch
 import torch.backends.mps
 from torch.utils.data import DataLoader, random_split
 
-from utils.dl.model import MCDUNet
-from utils.dl.niab import (COMMON_TRANSFORMS, IMG_TRANSFORMS, MASK_TRANSFORMS,
+from utils.dl.models.mcd_unet import MCDUNet
+from utils.dl.dataset import (COMMON_TRANSFORMS, IMG_TRANSFORMS, MASK_TRANSFORMS,
                            SegmentationDataset)
 
 torch.cuda.manual_seed_all(42)  # set torch seed

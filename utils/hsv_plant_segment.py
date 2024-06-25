@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-import utils.white_balance as wb
+import utils.image_utils as wb
 
 HSVMIN_RAW = (30, 170, 0)
 HSVMAX_RAW = (65, 255, 255)

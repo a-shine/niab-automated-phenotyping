@@ -5,7 +5,7 @@ import torch
 import torch.backends.mps
 from torch.utils.data import DataLoader
 
-from utils.dl.niab import (IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS,
+from utils.dl.dataset import (IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS,
                            SegmentationDataset)
 
 BATCH_SIZE = 16
