@@ -75,6 +75,8 @@ from utils.image_utils import load_image_ts
 raw_images = load_image_ts(dataset_root=[PATH_TO_DATASET/niab], exp=1, block=[BLOCK_NUMBER], pot=[POT_NUMBER])
 ```
 
+Sample data needed to generate the figures for report are included in the repository `sample_data/` directory.
+
 ## Installation and usage
 
 <!-- TODO: Add quick colab version of notebook 12 to run through notebook with sample data for reproducibility -->
