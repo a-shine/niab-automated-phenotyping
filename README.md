@@ -13,28 +13,36 @@
   </tr>
 </table>
 
-**Keywords (general to specific)**: Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Tef, Weed resilience
+## Abstract
 
-## Overview
+<!-- TODO -->
+
+**Keywords (general to specific)**: Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Teff, Weed resilience
 
 ## Repo structure
 
-* [.assets/](./.assets/): assets such as images used in the README
-* [archive/](./archive/): old files that may be useful for reference
-* [notebooks/](./notebooks/): main Jupyter notebooks of the project
-<!-- TODO: add small descriptive sentence for each notebooks purpose -->
+* [.assets/](./.assets/): Assets such as images used in the README and notebooks
+* [archive/](./archive/): Old files that may be useful for reference
+* [notebooks/](./notebooks/): Main Jupyter notebooks for the project
+  *  [011-identifying-pot-rim.ipynb](./notebooks/011-identifying-pot-rim.ipynb): Pot rim tracking using the Circle Hough Transform algorithm
+  * **[012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb)**: Complete canopy coverage tracking phenotyping pipeline
+  * [013-visualising-uncertainty.ipynb](./notebooks/013-visualising-uncertainty.ipynb): Visualise uncertainty distribution and heatmaps for images in the dataset
+  * [015-binary-instance-model.ipynb](./notebooks/015-binary-instance-model.ipynb): Early experiments using Discriminative loss function for semantic instance segmentation
+  * [016-instance-graph-algo.ipynb](./notebooks/016-instance-graph-algo.ipynb): Shoot following algorithm based on kernel convolutions for end, crossing and branching point classification
+  * [017-qualitative-segmentation-output.ipynb](./notebooks/017-qualitative-segmentation-output.ipynb): Side-by-side comparison of teff shoot semantic segmentation model output
 * [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
 * [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
 
 ## Data
 
 The data used for this project is courtesy of the National Institute of of Agricultural Botany (NIAB).
-The raw dataset contains X top down RGB images taken over the course of X weeks from a phenotyping platform.
-The crop in question is tef.
+The raw dataset contains 1120 top down RGB images taken over the course of several weeks from a phenotyping platform.
+The crop in question is teff.
 
-The raw dataset is available at:...
+The raw dataset is available at [Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027](https://doi.org/10.34740/KAGGLE/DSV/8750027).
 
-As part of this project, 300 images were annotated for use in supervised learning of Deep Learning Semantic segmentation models.
+As part of this project, 280 images were annotated for use in supervised learning of Deep Learning Semantic segmentation models.
+The annotated dataset has been made available at [Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050](https://doi.org/10.34740/KAGGLE/DSV/8759050).
 The descriptions of the available annotated datasets is found in the table bellow.
 
 | Dataset name | Description |
@@ -50,11 +58,6 @@ The description of the available annotated datasets can be found in the followin
 |--------------|-------------|
 | Fully corrected w. active learning | This is the Fully corrected dataset mentioned above (280 images) with the addition of the 20 images in in the remainder of the dataset that introduced the most MC uncertainty. |
 | Fully corrected w. random  | This is the Fully corrected dataset mentioned above (280 images) with the addition of 20 images picked at random throughout the remaining dataset. |
-
-Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027
-
-Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050
-
 
 ## Installation and usage
 
