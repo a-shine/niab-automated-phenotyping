@@ -79,7 +79,9 @@ Sample data needed to generate the figures for report are included in the reposi
 
 ## Installation and usage
 
-<!-- TODO: Add quick colab version of notebook 12 to run through notebook with sample data for reproducibility -->
+To get started we recommend taking a look at [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb).
+This notebook provides a full overview of the phenotyping pipeline, documenting each step.
+A hosted version of notebook [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb) is available on [Kaggle](https://www.kaggle.com/code/alexandreshinebourne/012-canopy-coverage-tracking-kaggle-version).
 
 To install the required dependencies and source files, follow these steps:
 
@@ -101,9 +103,6 @@ To install the required dependencies and source files, follow these steps:
     ```
 
 Note: The code was developed and tested on Python 3.12.3.
-
-To get started we recommend taking a look at [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb).
-This notebook provides a full overview of the pipeline, documenting each step.
 
 ## License
 
