@@ -81,7 +81,7 @@ To install the required dependencies and source files, follow these steps:
 
 Note: The code was developed and tested on Python 3.12.3.
 
-To get started we recommend taking a look at [notebooks/012-individual-identifying-algorithm.ipynb](./notebooks/012-individual-identifying-algorithm.ipynb).
+To get started we recommend taking a look at [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb).
 This notebook provides a full overview of the pipeline, documenting each step.
 
 ## License
