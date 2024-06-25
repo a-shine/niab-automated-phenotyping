@@ -41,23 +41,23 @@ The crop in question is teff.
 
 The raw dataset is available at [Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027](https://doi.org/10.34740/KAGGLE/DSV/8750027).
 
-As part of this project, 280 images were annotated for use in supervised learning of Deep Learning Semantic segmentation models.
+As part of this project, 280 images were annotated for use in supervised learning of Deep Learning semantic segmentation models.
 The annotated dataset has been made available at [Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050](https://doi.org/10.34740/KAGGLE/DSV/8759050).
 The descriptions of the available annotated datasets is found in the table bellow.
 
 | Dataset name | Description |
 |--------------|-------------|
-| Raw output from HSV segmentation pipeline | Collection of white balanced images and masks generated directly from the HSV segmentation pipeline. No manual corrections have been made. |
-| Partially corrected | Collection of white balanced images and masks generated from the HSV segmentation pipeline with manual noise removal (removing pixels misclassified as shoots). |
-| Fully corrected | Collection of white balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and modified annotation to correctly classify pixels as shoot that were previously classified as background. |
+| `Base_Training/Raw_HSV` | White balanced images and masks generated directly from the HSV segmentation pipeline. No manual corrections have been made. |
+| `Base_Training/Partially_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal (removing pixels misclassified as shoots). |
+| `Base_Training/Fully_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and modified annotation to correctly classify pixels as shoot that were previously classified as background. |
 
-We also looked at exploring an active learning approach, where images that generated predictions with high-levels of uncertainty were annotated to improve model performance.
+We also explored an active learning approach, where images that generated predictions with high-levels of uncertainty were annotated to augment the training dataset to maximise annotation budget value.
 The description of the available annotated datasets can be found in the following table.
 
 | Dataset name | Description |
 |--------------|-------------|
-| Fully corrected w. active learning | This is the Fully corrected dataset mentioned above (280 images) with the addition of the 20 images in in the remainder of the dataset that introduced the most MC uncertainty. |
-| Fully corrected w. random  | This is the Fully corrected dataset mentioned above (280 images) with the addition of 20 images picked at random throughout the remaining dataset. |
+| `Active_Learning/MC_Uncertainty` | `Base_Training/Fully_Corrected` dataset mentioned above with the addition of the 10 images that introduced the most MC dropout uncertainty. |
+| 3 sets of  `Active_Learning/Random_XX` | `Base_Training/Fully_Corrected` dataset mentioned above with the addition of 10 images picked at random throughout the remaining dataset. |
 
 ## Installation and usage
 
@@ -90,5 +90,3 @@ This notebook provides a full overview of the pipeline, documenting each step.
 ## License
 
 The code in this repository is made available for public use under the MIT OpenSource license. For full details see [LICENSE](./LICENSE).
-
-## Acknowledgments
