@@ -41,6 +41,8 @@ The crop in question is teff.
 
 The full raw dataset is available at [Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027](https://doi.org/10.34740/KAGGLE/DSV/8750027).
 
+### Semantic segmentation
+
 As part of this project, 280 images were annotated for use in supervised learning of Deep Learning semantic segmentation models.
 The annotated dataset has been made available at [Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050](https://doi.org/10.34740/KAGGLE/DSV/8759050).
 The descriptions of the available annotated datasets is found in the table bellow.
@@ -60,6 +62,18 @@ The description of the available annotated datasets can be found in the followin
 | 3 sets of  `Active_Learning/Random_XX` | `Base_Training/Fully_Corrected` dataset mentioned above with the addition of 10 images picked at random throughout the remaining dataset. |
 
 A portion of the annotated dataset has been reserved to benchmark model performance and is found in the `Test/` directory.
+
+### Shoot canopy coverage tracking
+
+In addition to developing a Deep Learning model for semantic segmentation of teff shoots, as part of this project, we also used the model in a complete phenotyping pipeline to track teff shoot canopy coverage over time.
+
+A time series can be loaded from the full phenotyping platform dataset with the following utility code:
+
+```python
+from utils.image_utils import load_image_ts
+
+raw_images = load_image_ts(dataset_root=[PATH_TO_DATASET/niab], exp=1, block=[BLOCK_NUMBER], pot=[POT_NUMBER])
+```
 
 ## Installation and usage
 
