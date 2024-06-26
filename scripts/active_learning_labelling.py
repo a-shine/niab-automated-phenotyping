@@ -1,17 +1,20 @@
-# Batch script that runes inference with uncertainty on the images in the
-# dataset.
+# Batch script that runs inference with uncertainty on the images in the
+# dataset and writes the results to a csv file. The script uses the MC dropout
+# U-Net model to predict the segmentation mask and calculate the uncertainty
+# values.
 
 import torch
 
-from utils.dl.models.mcd_unet import MCDUNet
 from utils.dl.dataset import IMG_TRANSFORMS_NO_JITTER, ActiveLearningDataset
+from utils.dl.mc_dropout_uncertainty import predict_with_uncertainty
+from utils.dl.models.mcd_unet import MCDUNet
 
-niab_dataset = ActiveLearningDataset(
-    "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename",
-    IMG_TRANSFORMS_NO_JITTER,
-)
-
+DATA_DIR = "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Top_Images_Clean_Rename"
 MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240605150017/best_model.pth"
+THRESHOLD = 0.5  # Threshold to binarize the output mask
+
+
+niab_dataset = ActiveLearningDataset(DATA_DIR, IMG_TRANSFORMS_NO_JITTER)
 
 device = (
     "cuda"
@@ -21,29 +24,6 @@ device = (
     else "cpu"
 )
 print(f"Running model using {device} device")
-
-
-def predict_with_uncertainty(model, image, n_times=500):
-    # Set model to training mode to enable dropout at test time
-    model.train()
-
-    # List to store predictions
-    predictions = []
-
-    with torch.no_grad():
-        for _ in range(n_times):
-            output = model(image.unsqueeze(0).to(device))
-            predictions.append(output)
-
-    # Convert predictions list to tensor
-    predictions = torch.stack(predictions)
-
-    # Calculate mean and variance
-    mean = torch.mean(predictions, dim=0)
-    variance = torch.var(predictions, dim=0)
-
-    return mean, variance
-
 
 # Create an instance of the model and move it to the device (GPU or CPU)
 model = MCDUNet(
@@ -55,36 +35,26 @@ model = MCDUNet(
     activation=True,
 ).to(device)
 
+# Load the model weights
 model.load_state_dict(torch.load(MODEL_PATH))
 
-# create a csv with two columns: image_name, uncertainty
+# Create a csv file to store the uncertainty values
 csv = open("/home/users/ashine/gws/niab-automated-phenotyping/uncertainty.csv", "w")
 csv.write("img_path,mean_uncertainty,mcd_uncertainty\n")
 
 # Loop through the dataset and run prediction with uncertainty
 for name, image in niab_dataset:
-    m, u = predict_with_uncertainty(model, image)
+    m, u = predict_with_uncertainty(model, image, device, n_times=500)
 
-    # Calculate mean uncertainty per pixel (useful if you want to know how uncertain the model is on average for each pixel)
+    # Calculate mean uncertainty per pixel (useful if you want to know how
+    # uncertain the model is on average for each pixel)
     mean_uncertainty = torch.mean(u)
 
-    # The original definition of MCD uncertainty involves normalizing by the volume
-    # of the predicted mask, not the total number of pixels in the image. If the
-    # predicted mask only covers a portion of the image, then the MCD uncertainty
-    # would be a measure of average uncertainty within the mask, not the entire
-    # image.
+    # Compute MCD Uncertainty - Global score of how certain or uncertain the
+    # model is given an input image, which can be useful if you want to get a
+    # single uncertainty value for the entire image.
 
-    # If you want to calculate MCD uncertainty, you would need to sum and normalize
-    # only over the pixels within the predicted mask. This would give you a
-    # different measure of uncertainty that might be more relevant if you're
-    # specifically interested in the areas of the image where the model is making
-    # predictions.
-
-    # Calculate MCD Uncertainty
-    # global score of how certain or uncertain the model is given an input image, which can be useful if you want to get a single uncertainty value for the entire image
-    # mcd_uncertainty = torch.sum(u) / torch.numel(u)
-    # Calculate MCD Uncertainty within the predicted mask
-    mask = m > 0.5  # replace 'threshold' with appropriate value
+    mask = m > THRESHOLD
 
     mcd_uncertainty = (
         (torch.sum(u[mask]) / torch.sum(mask)).item() if torch.sum(mask) > 0 else 0.0
@@ -94,4 +64,5 @@ for name, image in niab_dataset:
         f"Image name: {name}, Mean uncertainty: {mean_uncertainty.item()}, MCD Uncertainty: {mcd_uncertainty}"
     )
 
+    # Write the results to the csv file
     csv.write(f"{name},{mean_uncertainty.item()},{mcd_uncertainty}\n")
