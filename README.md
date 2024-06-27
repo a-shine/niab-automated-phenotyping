@@ -13,9 +13,21 @@
   </tr>
 </table>
 
-## Abstract
+## Overview
 
-<!-- TODO -->
+Climate change poses significant challenges to food security in Africa, necessitating the development of resilient crop varieties.
+Teff (Eragrostis tef Zucc. trotter), an important but underutilized cereal crop in East Africa, shows promise due to its natural resilience to waterlogging and drought.
+This study addresses the phenotyping bottleneck in teff breeding programs by developing an automated, high-throughput computer vision pipeline for analyzing teff shoot imagery, with a focus on tracking plant canopy coverage ratio (PCCr) as an indicator of weed competitiveness.
+
+We implement and compare deep learning models, including U-Net and DeepLabV3+ architectures, for semantic segmentation of teff shoots.
+The impact of annotation quality on model performance is assessed, and an active learning approach utilizing Monte Carlo dropout for uncertainty quantification is explored to optimize the annotation process.
+The best-performing model, a Monte Carlo dropout U-Net trained on fully corrected datasets, is integrated into a modular phenotyping pipeline retrofitted to an existing NIAB dataset.
+
+Results demonstrate the efficacy of the semantic segmentation models, with the MC dropout U-Net showing superior performance.
+The active learning strategy shows promise in improving model performance with minimal additional annotations.
+However, the automated PCCr tracking reveals limitations in certain scenarios, primarily due to challenges in instance segmentation and shoot-to-sector assignment.
+
+This work contributes to the field of plant phenomics by providing open-source tools for semi-automated labeling, baseline teff shoot segmentation models, an active learning strategy for efficient dataset augmentation, and a modular computer vision phenotyping pipeline
 
 **Keywords (general to specific)**: Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Teff, Weed resilience
 
@@ -83,6 +95,8 @@ To get started we recommend taking a look at [notebooks/012-canopy-coverage-trac
 This notebook provides a full overview of the phenotyping pipeline, documenting each step.
 A hosted version of notebook [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb) is available on [Kaggle](https://www.kaggle.com/code/alexandreshinebourne/012-canopy-coverage-tracking-kaggle-version).
 
+Pre-trained model weights have also been uploaded to [Kaggle](https://www.kaggle.com/models/alexandreshinebourne/mc-dropout-u-net-teff-shoot-semantic-segmentation).
+
 To install the required dependencies and source files, follow these steps:
 
 1. Clone the repository onto machine
@@ -103,6 +117,22 @@ To install the required dependencies and source files, follow these steps:
     ```
 
 Note: The code was developed and tested on Python 3.12.3.
+
+## Using semi-automated ground truth generation and GUI annotation correction tool
+
+To facilitate creating annotated datasets for different crops and phenotyping platforms, this repository contains semi-automated ground truth generation tooling.
+
+![](.assets/imgs/readme/annotation-pipeline.png)
+
+1. The [scripts/tool_hsv_thresholding.py](./scripts/tool_hsv_thresholding.py) is a GUI tool that enables users to see the segmentation output for different HSV bounds in realtime to determine which bounds best suit the dataset.
+1. The [scripts/hsv_plant_segment.py](./scripts/hsv_plant_segment.py) script can be used to generate initial noisy masks.
+    You define the directory of the images, the HSV threshold bounds and the scripts outputs the white balanced images and generated masks.
+1. You can then specify the location of this directory in the [scripts/tool_mask_editing.py](./scripts/tool_mask_editing.py) script and a GUI tool will display allowing users to correct the generated masks and cycle through the images.
+    The commands to correct the mask annotations are as follows:
+    * Eraser `right-click` mouse button
+    * Brush `left-click` mouse button
+    * Next image in annotation pipeline `n` (auto-saves corrected mask)
+    * Force save corrected mask `s`
 
 ## License
 
