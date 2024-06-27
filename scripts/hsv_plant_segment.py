@@ -1,5 +1,22 @@
-# Batch script to run HSV segmentation based on specified HSV thresholds on the
-# images in the dataset.
+"""
+The script loads the images from the dataset directory and applies the HSV
+segmentation to the images. The script uses the segment_plants function to
+segment the plants in the images based on the specified HSV thresholds.
+
+The script saves the white balanced images and the segmentation masks to the
+output folder.
+
+The script uses the following parameters:
+- HSVMIN_WB: The minimum HSV values for the white balanced image
+- HSVMAX_WB: The maximum HSV values for the white balanced image
+
+Example:
+    python hsv_plant_segment.py
+
+Note: The script assumes that the dataset directory contains images in the same
+format as the NIAB dataset. Make sure to use the correct HSV thresholds for
+segmentation of white balanced images.
+"""
 
 import glob
 import os
@@ -9,21 +26,13 @@ import numpy as np
 
 from utils.image_utils import white_balance as wb
 
-HSVMIN_RAW = (30, 170, 0)
-HSVMAX_RAW = (65, 255, 255)
 HSVMIN_WB = (30, 80, 0)
 HSVMAX_WB = (65, 255, 255)
 
 
 def segment_plants(img):
-    # lower_raw = np.array(HSVMIN_RAW)
-    # upper_raw = np.array(HSVMAX_RAW)
     lower_wb = np.array(HSVMIN_WB)
     upper_wb = np.array(HSVMAX_WB)
-
-    # Create HSV Image and threshold into a range.
-    # hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    # mask_raw = cv2.inRange(hsv_img, lower_raw, upper_raw)
 
     # Create HSV Image from white balanced image and threshold into a range.
     wb_img = wb(img)
