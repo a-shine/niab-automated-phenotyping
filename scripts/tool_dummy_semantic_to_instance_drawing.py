@@ -1,3 +1,26 @@
+"""
+Graphical tool to create dummy semantic instance segmentation dataset by
+drawing lines on a black image similar to shoots.
+
+The script creates a window with a black image and allows the user to draw lines
+on the image using the mouse. The script saves the binary and instance masks
+to the output directory.
+
+The script uses the following parameters:
+- min_line_width: The minimum width of the line to draw
+- max_line_width: The maximum width of the line to draw
+- output_dir: The output directory to save the masks
+- auto_increment: Flag to toggle auto-incrementing the class ID
+
+Example:
+    python tool_dummy_semantic_to_instance_drawing.py
+
+Note: The script creates a window with a black image and allows the user to draw
+lines on the image using the mouse. Press 'n' to save the current image and create
+a new one. Press 'i' to change the class ID. Press 'a' to toggle auto-incrementing
+the class ID.
+"""
+
 import os
 
 import cv2
