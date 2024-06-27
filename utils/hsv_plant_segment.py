@@ -5,6 +5,18 @@ import utils.image_utils as wb
 
 
 def segment_plants(img, hsvmin_wb, hsvmax_wb):
+    """
+    Segment plants in the image based on the HSV thresholds.
+
+    Args:
+        img: The input image.
+        hsvmin_wb: The minimum HSV values for the white balanced image.
+        hsvmax_wb: The maximum HSV values for the white balanced image.
+
+    Returns:
+        wb_img: The white balanced image.
+        output: The segmented image.
+    """
     lower_wb = np.array(hsvmin_wb)
     upper_wb = np.array(hsvmax_wb)
 
