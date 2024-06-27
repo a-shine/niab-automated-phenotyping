@@ -1,8 +1,29 @@
-# Train model for top down shoot segmentation. Can be called using slurm with
-# the training-job.sh script. The command is `sbatch training-job.sh`.
+"""
+Training script for plant segmentation.
 
-# Good example of training script using segmentation_models.pytorch can be found
-# here: https://github.com/qubvel/segmentation_models.pytorch/blob/master/examples/binary_segmentation_intro.ipynb
+This script trains a model for plant segmentation using the dataset in the
+specified directory. The script uses the SegmentationDataset class to load the
+images and masks from the directory and create a PyTorch dataset. The script
+splits the dataset into training and validation sets and creates data loaders
+for training and validation.
+
+Good example of training script using segmentation_models.pytorch can be found
+here: https://github.com/qubvel/segmentation_models.pytorch/blob/master/examples/binary_segmentation_intro.ipynb
+
+The script uses the following parameters:
+- BATCH_SIZE: The batch size for training
+- EPOCHS: The number of epochs to train the model
+- MODEL_NAME: The name of the model to train (unet, deeplab, mcdunet)
+- DATASET_NAME: The name of the dataset to use for training
+
+Example:
+    python train_plant_seg.py
+    sbatch training-job.sh (run on slurm)
+
+Note: The script assumes that the dataset directory contains images and masks
+in the same format as the NIAB dataset. Make sure to use the correct model name
+and dataset name for training the model.
+"""
 
 import os
 from datetime import datetime
@@ -14,19 +35,14 @@ import torch
 import torch.backends.mps
 from torch.utils.data import DataLoader, random_split
 
+from utils.dl.dataset import (COMMON_TRANSFORMS, IMG_TRANSFORMS,
+                              MASK_TRANSFORMS, SegmentationDataset)
 from utils.dl.models.mcd_unet import MCDUNet
-from utils.dl.dataset import (COMMON_TRANSFORMS, IMG_TRANSFORMS, MASK_TRANSFORMS,
-                           SegmentationDataset)
 
 torch.cuda.manual_seed_all(42)  # set torch seed
 torch.manual_seed(42)  # set torch seed
 
 # Parameters
-# https://ai.stackexchange.com/questions/8560/how-do-i-choose-the-optimal-batch-size
-# https://stats.stackexchange.com/questions/164876/what-is-the-trade-off-between-batch-size-and-number-of-iterations-to-train-a-neu
-# It has been observed that with larger batch there is a significant degradation in the quality of the model, as
-# measured by its ability to generalize i.e. large batch size is better for training but not for generalization
-# (overfitting)
 BATCH_SIZE = 2**4  # should be divisible by the training dataset size
 EPOCHS = 200
 MODEL_NAME = "mcdunet"
@@ -34,6 +50,7 @@ DATASET_NAME = "Partially_Corrected"
 
 print(f"Training model {MODEL_NAME} on dataset {DATASET_NAME}")
 
+# Load the dataset with the torch Dataset class
 data_processed = SegmentationDataset(
     f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/{DATASET_NAME}/Imgs",
     f"/home/users/ashine/gws/niab-automated-phenotyping/datasets/{DATASET_NAME}/Masks",
@@ -172,19 +189,9 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
             X, y = X.to(device), y.to(device)
             pred = model(X)
 
-            # Compute loss before converting the predictions to a binary mask
-            # The reason is that most loss functions for segmentation tasks,
-            # such as Binary Cross Entropy or Dice Loss, operate on the raw
-            # output of the model (the logits) and not on the binarized
-            # version. These loss functions incorporate a form of thresholding
-            # as part of their calculation, and applying an additional
-            # thresholding step before calculating the loss can disrupt this.
             total_loss += loss_fn(pred, y).item()
 
-            # Lets compute metrics for some threshold
-            # first convert mask values to probabilities, then
-            # apply thresholding
-            # prob_mask = pred.sigmoid() - i think this is where the issue is (I apply sigmoid to a signmoid)
+            # Apply threshold to the prediction (binary mask)
             pred_mask = (pred > threshold).float()
 
             # Calculate true positives, false positives, false negatives, true negatives
@@ -212,6 +219,7 @@ loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=False)
 optimizer = torch.optim.Adam(
     params=model.parameters(), lr=3e-4
 )  # high learning rate and allow it to decay
+
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)  # decay the learning rate by a factor of 0.1 every epoch
 
 # creating training job id based on timestamp
