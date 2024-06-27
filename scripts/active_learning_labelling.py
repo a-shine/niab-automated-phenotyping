@@ -1,7 +1,32 @@
-# Batch script that runs inference with uncertainty on the images in the
-# dataset and writes the results to a csv file. The script uses the MC dropout
-# U-Net model to predict the segmentation mask and calculate the uncertainty
-# values.
+"""
+Batch script that runs inference with uncertainty on the images in the dataset
+and writes the results to a csv file. The script uses the MC dropout U-Net
+model to predict the segmentation mask and calculate the uncertainty values.
+
+The script uses the ActiveLearningDataset class to load the images from the
+dataset and the IMG_TRANSFORMS_NO_JITTER to apply the same transformations used
+during training.
+
+The script uses the predict_with_uncertainty function to run the model multiple
+times and calculate the uncertainty values.
+
+The script writes the results to a csv file with the following columns:
+- img_path: The path of the image
+- mean_uncertainty: The mean uncertainty per pixel
+- mcd_uncertainty: The MCD Uncertainty value
+
+The script uses the following parameters:
+- DATA_DIR: The path to the dataset directory
+- MODEL_PATH: The path to the model weights
+- THRESHOLD: The threshold to binarize the output mask
+
+Example:
+    python active_learning_labelling.py
+
+Note: The script assumes that the dataset directory contains images in the
+same format as the NIAB dataset and that the model weights are saved in the
+same format as the MC dropout U-Net model.
+"""
 
 import torch
 
