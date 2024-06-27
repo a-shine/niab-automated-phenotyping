@@ -1,4 +1,25 @@
-# Benchmark model on fully corrected annotated dataset (accurate ground truth)
+"""
+This script is used to benchmark the performance of a trained model on the test
+dataset.
+
+The script loads the model weights from the MODEL_PATH and uses the model to
+predict the segmentation masks on the test dataset.
+
+The script prints the test metrics including the average loss, IoU score, and F1
+score on the test dataset.
+
+The script uses the following parameters:
+- BATCH_SIZE: The batch size for the dataloader
+- MODEL_ARCH: The model architecture (unet, deeplab, mcdunet)
+- MODEL_PATH: The path to the model weights to be tested
+
+Example:
+    python benchmark_model.py
+
+Note: The script assumes that the test dataset directory contains images and
+masks in the same format as the NIAB dataset and that the model weights are
+saved in the same format as specified model architecture.
+"""
 
 import segmentation_models_pytorch as smp
 import torch
@@ -6,10 +27,13 @@ import torch.backends.mps
 from torch.utils.data import DataLoader
 
 from utils.dl.dataset import (IMG_TRANSFORMS_NO_JITTER, MASK_TRANSFORMS,
-                           SegmentationDataset)
+                              SegmentationDataset)
+from utils.dl.models.mcd_unet import MCDUNet
 
 BATCH_SIZE = 16
+MODEL_ARCH = "mcdunet"  # "unet", "deeplab"
 MODEL_PATH = "/home/users/ashine/gws/niab-automated-phenotyping/models/20240624182742/best_model.pth"
+
 
 test_dataset = SegmentationDataset(
     "/home/users/ashine/gws/niab-automated-phenotyping/datasets/niab/EXP01/Top_Images/Annotated_Test_Dataset/imgs",
@@ -35,36 +59,38 @@ device = (
 )
 print(f"Training/fitting using {device} device")
 
-# Create an instance of the model and move it to the device (GPU or CPU)
-# model = MCDUNet(n_channels=3,
-#              n_classes=1,
-#              bilinear=True,
-#              ddims=[32, 64, 128, 256, 512],
-#              UQ=True,
-#              activation=True,
-#              ).to(device)
+if MODEL_ARCH == "unet":
+    model = smp.Unet(
+        encoder_name="resnet34",  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        encoder_weights="imagenet",  # use `imagenet` pre-trained weights for encoder initialization
+        in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+        classes=1,  # model output channels (number of classes in your dataset)
+        activation="sigmoid",  # model output activation function (e.g. `softmax` or `sigmoid`)
+    ).to(device)
+elif MODEL_ARCH == "deeplab":
+    model = smp.DeepLabV3Plus(
+        encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+        encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+        in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.
+        classes=1,                      # model output channels (number of classes in your dataset
+        activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
+    ).to(device)
+elif MODEL_ARCH == "mcdunet":
+    model = MCDUNet(
+        n_channels=3,
+        n_classes=1,
+        bilinear=True,
+        ddims=[32, 64, 128, 256, 512],
+        UQ=True,
+        activation=True,
+    ).to(device)
+else:
+    raise ValueError(f"Model architecture {MODEL_ARCH} not supported")
 
-model = smp.Unet(
-    encoder_name="resnet34",  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-    encoder_weights="imagenet",  # use `imagenet` pre-trained weights for encoder initialization
-    in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-    classes=1,  # model output channels (number of classes in your dataset)
-    activation="sigmoid",  # model output activation function (e.g. `softmax` or `sigmoid`)
-).to(device)
-
-# model = smp.DeepLabV3Plus(
-#     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-#     encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-#     in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.
-#     classes=1,                      # model output channels (number of classes in your dataset
-#     activation="sigmoid"            # model output activation function (e.g. `softmax` or `sigmoid`)
-# ).to(device)
-
-# Load the model
+# Load the model weights
 model.load_state_dict(torch.load(MODEL_PATH))
 
-
-def validate(dataloader, model, loss_fn, threshold=0.5):
+def validate(dataloader, model, threshold=0.5):
     num_batches = len(dataloader)
     model.eval()
     total_loss = 0
@@ -76,19 +102,7 @@ def validate(dataloader, model, loss_fn, threshold=0.5):
             X, y = X.to(device), y.to(device)
             pred = model(X)
 
-            # Compute loss before converting the predictions to a binary mask
-            # The reason is that most loss functions for segmentation tasks,
-            # such as Binary Cross Entropy or Dice Loss, operate on the raw
-            # output of the model (the logits) and not on the binarized
-            # version. These loss functions incorporate a form of thresholding
-            # as part of their calculation, and applying an additional
-            # thresholding step before calculating the loss can disrupt this.
-            total_loss += loss_fn(pred, y).item()
-
-            # Lets compute metrics for some threshold
-            # first convert mask values to probabilities, then
-            # apply thresholding
-            # prob_mask = pred.sigmoid()
+            # Convert to binary mask
             pred_mask = (pred > threshold).float()
 
             # Calculate true positives, false positives, false negatives, true negatives
