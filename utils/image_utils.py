@@ -1,3 +1,7 @@
+"""
+Image utilities for loading, processing, and saving images.
+"""
+
 import glob
 
 import cv2
