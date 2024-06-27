@@ -28,7 +28,7 @@
   * **[012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb)**: Complete canopy coverage tracking phenotyping pipeline
   * [013-visualising-uncertainty.ipynb](./notebooks/013-visualising-uncertainty.ipynb): Visualise uncertainty distribution and heatmaps for images in the dataset
   * [015-semantic-instance-model.ipynb](./notebooks/015-semantic-instance-model.ipynb): Early experiments using Discriminative loss function for semantic instance segmentation
-  * [016-instance-graph-algo.ipynb](./notebooks/016-instance-graph-algo.ipynb): Shoot following algorithm based on kernel convolutions for end, crossing and branching point classification
+  * [016-shoot-following-algo.ipynb](./notebooks/016-shoot-following-algo.ipynb): Shoot following algorithm based on kernel convolutions for end, crossing and branching point classification
   * [017-qualitative-segmentation-output.ipynb](./notebooks/017-qualitative-segmentation-output.ipynb): Side-by-side comparison of teff shoot semantic segmentation model output
 * [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
 * [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
