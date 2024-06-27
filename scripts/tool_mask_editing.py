@@ -1,8 +1,27 @@
-# GUI tool to help labeler correct image masks. This is meant to be used as
-# part of a semi-automatic labeling pipeline where the bulk of the segment
-# labeling is carried out using a naive approach such as HSV thresholding and
-# then the operator corrects the masks using this tool before feeding the
-# corrected masks to the neural network for training.
+"""
+Graphical tool to help operator to correct image masks. This is meant to be
+used as part of a semi-automatic labeling pipeline where the bulk of the
+segment labeling is carried out using a naive approach such as HSV thresholding
+and then the operator corrects the masks using this tool before feeding the
+corrected masks to the neural network for training.
+
+The script creates a window with the specified image and allows the user to
+correct the mask using a brush tool. The script displays the image with the
+mask overlayed with low opacity. The user can use the left mouse button to draw
+on the mask and the right mouse button to erase. The user can adjust the brush
+size using the trackbar.
+
+The script uses the following parameters:
+- mask_dir: The path to the directory containing the mask images
+- img_dir: The path to the directory containing the corresponding images
+
+Example:
+    python tool_mask_editing.py
+
+Note: The script creates a window with the specified image and allows the user
+to correct the mask using a brush tool. Press 'n' to move to the next mask and
+'s' to save the mask.
+"""
 
 import os
 
