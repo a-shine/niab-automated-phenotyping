@@ -1,6 +1,22 @@
-# GUI tool to help operator to find the HSV threshold values for HSV
-# segmentation suited to a specified image.
+"""
+Graphical tool to help operator to find the HSV threshold values for HSV
+segmentation suited to a specified image.
 
+The script creates a window with the specified image and allows the user to
+adjust the HSV threshold values using trackbars. The script displays the
+segmented image based on the HSV threshold values.
+
+The script uses the following parameters:
+- img_path: The path to the image for HSV segmentation
+
+Example:
+    python tool_hsv_thresholding.py
+
+Note: The script creates a window with the specified image and allows the user
+to adjust the HSV threshold values using trackbars. Press 'q' to exit the
+window. Apply white balancing to the image before using this tool in order to
+get the HSV values for the white balanced image.
+"""
 
 import cv2
 import numpy as np
@@ -29,7 +45,6 @@ cv2.createTrackbar("VMax", "image", 0, 255, nothing)
 
 while 1:
     # grab the frame
-
     hMin = cv2.getTrackbarPos("HMin", "image")
     sMin = cv2.getTrackbarPos("SMin", "image")
     vMin = cv2.getTrackbarPos("VMin", "image")
