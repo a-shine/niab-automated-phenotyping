@@ -19,7 +19,7 @@ Climate change poses significant challenges to food security, necessitating the 
 Teff (Eragrostis tef Zucc. trotter), an important but underutilized cereal crop in East Africa, shows promise due to its natural resilience to waterlogging and drought.
 This study addresses the phenotyping bottleneck in teff breeding programs by developing an automated, high-throughput computer vision pipeline for analyzing teff shoot imagery, with a focus on tracking Plant Canopy Coverage ratio (PCCr) as an indicator of weed resilience.
 
-We implement and compare Deep Learning (DL) models, including U-Net and DeepLabV3+ architectures, for semantic segmentation of teff shoots.
+I implement and compare Deep Learning (DL) models, including U-Net and DeepLabV3+ architectures, for semantic segmentation of teff shoots.
 The impact of annotation quality on model performance is assessed, and an Active Learning (AL) approach utilising Monte Carlo dropout for uncertainty quantification is explored to optimize the annotation process.
 The best-performing model, a Monte Carlo dropout U-Net trained on fully corrected datasets, is integrated into a modular phenotyping pipeline retrofitted to an existing dataset.
 
@@ -64,7 +64,7 @@ The descriptions of the dataset structure is found in the table bellow.
 | `Base_Training/Partially_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal (removing pixels misclassified as shoots). |
 | `Base_Training/Fully_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and corrections to classify pixels as shoot that were previously classified as background. |
 
-We also explored an AL approach, where images that generated predictions with high-levels of uncertainty were annotated to augment the training dataset to maximise annotation budget allocation.
+I also explored an AL approach, where images that generated predictions with high-levels of uncertainty were annotated to augment the training dataset to maximise annotation budget allocation.
 The description of the available datasets can be found in the following table.
 
 | Directory name | Description |
@@ -76,7 +76,7 @@ A portion of the annotated dataset has been reserved to benchmark model performa
 
 ### Shoot canopy coverage tracking
 
-In addition to developing Deep Learning models for semantic segmentation of teff shoots, we also used the model in a complete phenotyping pipeline to track teff shoot canopy coverage (PCCr) over time.
+In addition to developing Deep Learning models for semantic segmentation of teff shoots, the model were used in a complete phenotyping pipeline to track teff shoot canopy coverage (PCCr) over time.
 
 A time series can be loaded from the phenotyping platform dataset with the following utility code:
 
@@ -90,9 +90,11 @@ Sample data needed to generate the figures for report are included in the reposi
 
 ## Installation and usage
 
-To get started we recommend taking a look at [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb).
+![Kaggle](https://img.shields.io/badge/Kaggle-035a7d?style=for-the-badge&logo=kaggle&logoColor=white)
+
+To get started I recommend taking a look at [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb).
 This notebook provides a full overview of the phenotyping pipeline, documenting each step.
-A hosted version of notebook [notebooks/012-canopy-coverage-tracking.ipynb](./notebooks/012-canopy-coverage-tracking.ipynb) is available on [Kaggle](https://www.kaggle.com/code/alexandreshinebourne/012-canopy-coverage-tracking-kaggle-version).
+A hosted version of notebook is available on [Kaggle](https://www.kaggle.com/code/alexandreshinebourne/012-canopy-coverage-tracking-kaggle-version).
 
 Pre-trained model weights have also been uploaded to [Kaggle](https://www.kaggle.com/models/alexandreshinebourne/mc-dropout-u-net-teff-shoot-semantic-segmentation).
 
