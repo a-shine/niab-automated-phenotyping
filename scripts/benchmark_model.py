@@ -5,8 +5,8 @@ dataset.
 The script loads the model weights from the MODEL_PATH and uses the model to
 predict the segmentation masks on the test dataset.
 
-The script prints the test metrics including the average loss, IoU score, and F1
-score on the test dataset.
+The script prints the test metrics including the average loss, IoU score, and
+F1 score on the test dataset.
 
 The script uses the following parameters:
 - BATCH_SIZE: The batch size for the dataloader
