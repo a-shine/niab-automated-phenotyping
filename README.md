@@ -15,21 +15,21 @@
 
 ## Overview
 
-Climate change poses significant challenges to food security in Africa, necessitating the development of resilient crop varieties.
+Climate change poses significant challenges to food security, necessitating the development of resilient crop varieties.
 Teff (Eragrostis tef Zucc. trotter), an important but underutilized cereal crop in East Africa, shows promise due to its natural resilience to waterlogging and drought.
-This study addresses the phenotyping bottleneck in teff breeding programs by developing an automated, high-throughput computer vision pipeline for analyzing teff shoot imagery, with a focus on tracking plant canopy coverage ratio (PCCr) as an indicator of weed competitiveness.
+This study addresses the phenotyping bottleneck in teff breeding programs by developing an automated, high-throughput computer vision pipeline for analyzing teff shoot imagery, with a focus on tracking Plant Canopy Coverage ratio (PCCr) as an indicator of weed resilience.
 
-We implement and compare deep learning models, including U-Net and DeepLabV3+ architectures, for semantic segmentation of teff shoots.
-The impact of annotation quality on model performance is assessed, and an active learning approach utilizing Monte Carlo dropout for uncertainty quantification is explored to optimize the annotation process.
-The best-performing model, a Monte Carlo dropout U-Net trained on fully corrected datasets, is integrated into a modular phenotyping pipeline retrofitted to an existing NIAB dataset.
+We implement and compare Deep Learning (DL) models, including U-Net and DeepLabV3+ architectures, for semantic segmentation of teff shoots.
+The impact of annotation quality on model performance is assessed, and an Active Learning (AL) approach utilising Monte Carlo dropout for uncertainty quantification is explored to optimize the annotation process.
+The best-performing model, a Monte Carlo dropout U-Net trained on fully corrected datasets, is integrated into a modular phenotyping pipeline retrofitted to an existing dataset.
 
 Results demonstrate the efficacy of the semantic segmentation models, with the MC dropout U-Net showing superior performance.
-The active learning strategy shows promise in improving model performance with minimal additional annotations.
-However, the automated PCCr tracking reveals limitations in certain scenarios, primarily due to challenges in instance segmentation and shoot-to-sector assignment.
+The AL strategy shows promise in improving model performance with minimal additional annotations.
+However, the automated PCCr tracking reveals limitations in certain scenarios, primarily due to challenges in instance segmentation and shoot-to-sector assignment (phenotype-to-genotype mapping).
 
-This work contributes to the field of plant phenomics by providing open-source tools for semi-automated labeling, baseline teff shoot segmentation models, an active learning strategy for efficient dataset augmentation, and a modular computer vision phenotyping pipeline
+This work contributes to the field of plant phenomics by providing open-source tools for semi-automated annotation, several teff shoot segmentation models, an AL strategy for efficient dataset augmentation, and a complete modular computer vision phenotyping pipeline that can be adapted to other crop varieties and phenotyping platforms.
 
-**Keywords (general to specific)**: Artificial Intelligence (AI), Deep Learning (DL), Computer vision, Semantic segmentation, High-throughput phenotyping, Teff, Weed resilience
+**Keywords**: Teff phenotyping, Computer vision, Machine learning, Semantic segmentation, Weed resilience, High-throughput phenotyping, Active learning, Monte Carlo dropout, Crop resilience, Food security, Deep learning
 
 ## Repo structure
 
@@ -42,33 +42,32 @@ This work contributes to the field of plant phenomics by providing open-source t
   * [015-semantic-instance-model.ipynb](./notebooks/015-semantic-instance-model.ipynb): Early experiments using Discriminative loss function for semantic instance segmentation
   * [016-shoot-following-algo.ipynb](./notebooks/016-shoot-following-algo.ipynb): Shoot following algorithm based on kernel convolutions for end, crossing and branching point classification
   * [017-qualitative-segmentation-output.ipynb](./notebooks/017-qualitative-segmentation-output.ipynb): Side-by-side comparison of teff shoot semantic segmentation model output
-* [scripts/](./scripts/): scripts such as those used in the image pre/post-processing and for model training
-* [utils/](./utils/) utility package with all the util scripts used across notebooks and scripts
+* [scripts/](./scripts/): Scripts such as those used in the image pre/post-processing and for model training
+* [utils/](./utils/) Utility package with all the util scripts used across notebooks and scripts
 
 ## Data
 
 The data used for this project is courtesy of the National Institute of of Agricultural Botany (NIAB).
-The raw dataset contains 1120 top down RGB images taken over the course of several weeks from a phenotyping platform.
-The crop in question is teff.
+The raw dataset contains 1120 top down RGB images taken over the course of several weeks from a teff phenotyping platform.
 
 The full raw dataset is available at [Stéphanie Swarbreck. (2024). NIAB teff phenotyping platform [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8750027](https://doi.org/10.34740/KAGGLE/DSV/8750027).
 
 ### Semantic segmentation
 
-As part of this project, 280 images were annotated for use in supervised learning of Deep Learning semantic segmentation models.
+As part of this project, 280 images were annotated for use in supervised learning of deep semantic segmentation models.
 The annotated dataset has been made available at [Alexandre Shinebourne, and Stéphanie Swarbreck. (2024). Teff shoot semantic segmentation [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/8759050](https://doi.org/10.34740/KAGGLE/DSV/8759050).
-The descriptions of the available annotated datasets is found in the table bellow.
+The descriptions of the dataset structure is found in the table bellow.
 
-| Dataset name | Description |
+| Directory name | Description |
 |--------------|-------------|
 | `Base_Training/Raw_HSV` | White balanced images and masks generated directly from the HSV segmentation pipeline. No manual corrections have been made. |
 | `Base_Training/Partially_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal (removing pixels misclassified as shoots). |
-| `Base_Training/Fully_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and modified annotation to correctly classify pixels as shoot that were previously classified as background. |
+| `Base_Training/Fully_Corrected` | White balanced images and masks generated from the HSV segmentation pipeline with manual noise removal and corrections to classify pixels as shoot that were previously classified as background. |
 
-We also explored an active learning approach, where images that generated predictions with high-levels of uncertainty were annotated to augment the training dataset to maximise annotation budget value.
-The description of the available annotated datasets can be found in the following table.
+We also explored an AL approach, where images that generated predictions with high-levels of uncertainty were annotated to augment the training dataset to maximise annotation budget allocation.
+The description of the available datasets can be found in the following table.
 
-| Dataset name | Description |
+| Directory name | Description |
 |--------------|-------------|
 | `Active_Learning/MC_Uncertainty` | `Base_Training/Fully_Corrected` dataset mentioned above with the addition of the 10 images that introduced the most MC dropout uncertainty. |
 | 3 sets of  `Active_Learning/Random_XX` | `Base_Training/Fully_Corrected` dataset mentioned above with the addition of 10 images picked at random throughout the remaining dataset. |
@@ -77,9 +76,9 @@ A portion of the annotated dataset has been reserved to benchmark model performa
 
 ### Shoot canopy coverage tracking
 
-In addition to developing a Deep Learning model for semantic segmentation of teff shoots, as part of this project, we also used the model in a complete phenotyping pipeline to track teff shoot canopy coverage over time.
+In addition to developing Deep Learning models for semantic segmentation of teff shoots, we also used the model in a complete phenotyping pipeline to track teff shoot canopy coverage (PCCr) over time.
 
-A time series can be loaded from the full phenotyping platform dataset with the following utility code:
+A time series can be loaded from the phenotyping platform dataset with the following utility code:
 
 ```python
 from utils.image_utils import load_image_ts
@@ -106,6 +105,7 @@ To install the required dependencies and source files, follow these steps:
 1. (If using [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.anaconda.com/free/miniconda/index.html) environment manager, create a new environment)
     ```bash
     conda create -n [YOUR_ENV_NAME] python=3.12
+    conda activate [YOUR_ENV_NAME]
     ```
 1. From a terminal within the root of the repository, install the required dependencies
     ```bash
